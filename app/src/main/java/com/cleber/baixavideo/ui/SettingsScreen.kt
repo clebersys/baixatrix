@@ -45,6 +45,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cleber.baixavideo.BaixaVideoApplication
+import com.cleber.baixavideo.BuildConfig
 import com.cleber.baixavideo.data.SettingsStore
 import com.cleber.baixavideo.ui.components.GradientButton
 import kotlinx.coroutines.launch
@@ -168,15 +169,24 @@ fun SettingsScreen(onBack: () -> Unit) {
                     "Respeite os direitos autorais e os Termos de Uso das plataformas."
             ) {}
 
-            Text(
-                text = "BaixaVídeo · versão 1.0.0",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp),
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-            )
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = "Desenvolvido por Cleber Reis",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = "BaixaVídeo · versão ${BuildConfig.VERSION_NAME}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
             Spacer(Modifier.height(20.dp))
         }
     }

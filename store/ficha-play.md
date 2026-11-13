@@ -1,4 +1,4 @@
-# Ficha da Play Store — BaixaVídeo 1.0.0
+# Ficha da Play Store — BaixaVídeo 1.1.0
 
 Arquivos de mídia em `store/`:
 
@@ -11,7 +11,7 @@ Arquivos de mídia em `store/`:
 | `capturas/03-biblioteca.jpg` | Captura de celular 3 |
 
 Artefato de upload: `app/build/outputs/bundle/release/app-release.aab`
-(ou `dist/BaixaVideo-1.0.0.aab` — o AAB é assinado com a mesma keystore do APK).
+(ou `dist/BaixaVideo-1.1.0.aab` — o AAB é assinado com a mesma keystore do APK).
 
 ---
 
@@ -92,9 +92,10 @@ Requisitos: Android 8.0 ou superior.
 ## Novidades desta versão (release notes)
 
 ```
-Primeira versão do BaixaVídeo:
+Primeira versão pública do BaixaVídeo:
 • download de vídeos do Instagram e do Kwai com prévia no player
 • biblioteca "Meus vídeos" com abrir, compartilhar e excluir
 • recebimento de links compartilhados de outros apps
 • tema claro e escuro
+• assinatura do desenvolvedor: Desenvolvido por Cleber Reis
 ```

@@ -236,6 +236,16 @@ fun HomeScreen(
             }
 
             Spacer(Modifier.height(28.dp))
+
+            Text(
+                text = "Desenvolvido por Cleber Reis",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 12.dp),
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
         }
     }
 }

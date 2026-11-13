@@ -66,8 +66,8 @@ O app resolve tudo no próprio aparelho, sem depender de serviços de terceiros:
 O APK assinado pronto para uso fica em `dist/`:
 
 ```bash
-adb install -r dist/BaixaVideo-1.0.0.apk
-sha256sum -c dist/BaixaVideo-1.0.0.apk.sha256   # confere a integridade
+adb install -r dist/BaixaVideo-1.1.0.apk
+sha256sum -c dist/BaixaVideo-1.1.0.apk.sha256   # confere a integridade
 ```
 
 Também é possível copiar o APK para o celular e abrir o arquivo (é preciso
@@ -137,7 +137,7 @@ backend/                            # FastAPI + yt-dlp (opcional)
 
 O pacote para a Play Store está pronto:
 
-- **AAB assinado**: `dist/BaixaVideo-1.0.0.aab` (`./gradlew bundleRelease`)
+- **AAB assinado**: `dist/BaixaVideo-1.1.0.aab` (`./gradlew bundleRelease`)
 - **Ficha pronta** (título, descrições, categoria, Data safety): [`store/ficha-play.md`](store/ficha-play.md)
 - **Artes**: ícone 512, gráfico de destaque 1024×500 e capturas em [`store/`](store/)
 - **Passo a passo do Play Console**: [`store/publicacao-play.md`](store/publicacao-play.md)
