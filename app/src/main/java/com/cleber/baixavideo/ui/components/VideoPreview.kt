@@ -67,7 +67,12 @@ fun VideoPreview(
             .background(Color.Black)
     ) {
         if (started) {
-            ExoVideo(url = url, headers = headers, modifier = Modifier.fillMaxSize())
+            ExoVideo(
+                url = url,
+                headers = headers,
+                fillScreen = isVertical,
+                modifier = Modifier.fillMaxSize()
+            )
         } else {
             AsyncImage(
                 model = thumbnailUrl,
@@ -116,6 +121,7 @@ fun VideoPreview(
 private fun ExoVideo(
     url: String,
     headers: Map<String, String>,
+    fillScreen: Boolean,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -145,6 +151,9 @@ private fun ExoVideo(
             PlayerView(ctx).apply {
                 useController = true
                 setShowBuffering(PlayerView.SHOW_BUFFERING_WHEN_PLAYING)
+                if (fillScreen) {
+                    resizeMode = androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_ZOOM
+                }
                 this.player = player
             }
         },

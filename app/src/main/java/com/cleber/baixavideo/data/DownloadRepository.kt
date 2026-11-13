@@ -10,7 +10,10 @@ import com.cleber.baixavideo.data.model.VideoVariant
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withTimeoutOrNull
 import java.io.File
+import kotlin.coroutines.resume
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -25,7 +28,7 @@ class DownloadRepository(private val context: Context) {
     sealed interface State {
         /** progresso em 0..100, ou -1 quando o tamanho ainda é desconhecido. */
         data class Running(val progress: Int) : State
-        data class Completed(val path: String) : State
+        data class Completed(val path: String, val uri: Uri?) : State
         data class Failed(val reason: String) : State
     }
 
@@ -82,10 +85,8 @@ class DownloadRepository(private val context: Context) {
                             Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES),
                             relativePath
                         ).absolutePath
-                    MediaScannerConnection.scanFile(
-                        context, arrayOf(path), arrayOf("video/mp4"), null
-                    )
-                    emit(State.Completed(path))
+                    val uri = scanMedia(path)
+                    emit(State.Completed(path, uri))
                     return@flow
                 }
 
@@ -104,6 +105,21 @@ class DownloadRepository(private val context: Context) {
                 }
             }
             delay(400)
+        }
+    }
+
+    /**
+     * Registra o arquivo na galeria e devolve a URI do MediaStore. Compartilhar
+     * por essa URI funciona mesmo com scoped storage, onde o arquivo pertence
+     * ao DownloadManager e não pode ser lido direto pelo app.
+     */
+    private suspend fun scanMedia(path: String): Uri? = withTimeoutOrNull(8_000) {
+        suspendCancellableCoroutine { continuation ->
+            MediaScannerConnection.scanFile(
+                context, arrayOf(path), arrayOf("video/mp4")
+            ) { _, uri ->
+                if (continuation.isActive) continuation.resume(uri)
+            }
         }
     }
 

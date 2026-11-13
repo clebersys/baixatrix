@@ -1,6 +1,7 @@
 package com.cleber.baixavideo.ui
 
 import android.app.Application
+import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.cleber.baixavideo.BaixaVideoApplication
@@ -25,6 +26,7 @@ data class HomeUiState(
     /** 0..100, ou -1 enquanto o tamanho total é desconhecido. */
     val downloadProgress: Int? = null,
     val savedPath: String? = null,
+    val savedUri: Uri? = null,
     val error: String? = null,
     val errorDetails: String? = null,
     val message: String? = null
@@ -51,6 +53,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 errorDetails = null,
                 media = null,
                 savedPath = null,
+                savedUri = null,
                 downloadProgress = null
             )
         }
@@ -83,6 +86,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                     errorDetails = null,
                     media = null,
                     savedPath = null,
+                    savedUri = null,
                     downloadProgress = null
                 )
             }
@@ -114,7 +118,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun selectVariant(index: Int) {
-        _state.update { it.copy(selectedVariant = index, savedPath = null) }
+        _state.update { it.copy(selectedVariant = index, savedPath = null, savedUri = null) }
     }
 
     fun download() {
@@ -126,7 +130,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         downloadJob?.cancel()
         downloadJob = viewModelScope.launch {
             _state.update {
-                it.copy(isDownloading = true, downloadProgress = -1, error = null, savedPath = null)
+                it.copy(isDownloading = true, downloadProgress = -1, error = null, savedPath = null, savedUri = null)
             }
 
             val cookie = runCatching { settings.current().instagramCookie }.getOrDefault("")
@@ -141,6 +145,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                             isDownloading = false,
                             downloadProgress = null,
                             savedPath = downloadState.path,
+                            savedUri = downloadState.uri,
                             message = "Vídeo salvo em Filmes/BaixaVideo"
                         )
                     }

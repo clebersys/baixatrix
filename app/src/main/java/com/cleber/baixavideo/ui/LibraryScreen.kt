@@ -2,6 +2,15 @@
 
 package com.cleber.baixavideo.ui
 
+import android.Manifest
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -51,6 +60,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import coil.compose.AsyncImage
@@ -59,6 +69,7 @@ import coil.request.videoFrameMillis
 import com.cleber.baixavideo.R
 import com.cleber.baixavideo.data.LibraryItem
 import com.cleber.baixavideo.data.LibraryRepository
+import com.cleber.baixavideo.ui.components.GradientButton
 import com.cleber.baixavideo.util.Formatters
 import com.cleber.baixavideo.util.MediaIntents
 import kotlinx.coroutines.launch
@@ -74,12 +85,41 @@ fun LibraryScreen(onBack: () -> Unit) {
     var loading by remember { mutableStateOf(true) }
     var pendingDelete by remember { mutableStateOf<LibraryItem?>(null) }
 
-    fun refresh() {
-        items = repository.list()
+    val readPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        Manifest.permission.READ_MEDIA_VIDEO
+    } else {
+        Manifest.permission.READ_EXTERNAL_STORAGE
+    }
+    var hasAccess by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(context, readPermission) ==
+                PackageManager.PERMISSION_GRANTED
+        )
+    }
+    var askedPermission by remember { mutableStateOf(false) }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        hasAccess = granted
+        askedPermission = true
+        if (granted) items = repository.list()
         loading = false
     }
 
-    LaunchedEffect(Unit) { refresh() }
+    fun refresh() {
+        val granted = ContextCompat.checkSelfPermission(context, readPermission) ==
+            PackageManager.PERMISSION_GRANTED
+        hasAccess = granted
+        if (granted) {
+            items = repository.list()
+        }
+        loading = false
+    }
+
+    LaunchedEffect(Unit) {
+        if (hasAccess) refresh() else permissionLauncher.launch(readPermission)
+    }
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { refresh() }
 
     Scaffold(
@@ -104,6 +144,12 @@ fun LibraryScreen(onBack: () -> Unit) {
         ) {
             when {
                 loading -> Unit
+
+                !hasAccess -> PermissionCard(
+                    asked = askedPermission,
+                    onRequest = { permissionLauncher.launch(readPermission) },
+                    onOpenSettings = { openAppSettings(context) }
+                )
 
                 items.isEmpty() -> EmptyLibrary()
 
@@ -288,6 +334,66 @@ private fun EmptyLibrary() {
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
+}
+
+@Composable
+private fun PermissionCard(
+    asked: Boolean,
+    onRequest: () -> Unit,
+    onOpenSettings: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(32.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(
+            modifier = Modifier
+                .size(84.dp)
+                .clip(RoundedCornerShape(28.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.ic_movie),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(38.dp)
+            )
+        }
+        Spacer(Modifier.height(18.dp))
+        Text(
+            text = "Acesso aos vídeos",
+            style = MaterialTheme.typography.titleMedium
+        )
+        Spacer(Modifier.height(6.dp))
+        Text(
+            text = if (asked) {
+                "Autorize a leitura de vídeos nas configurações do aparelho para ver a biblioteca."
+            } else {
+                "O BaixaVídeo precisa de acesso aos vídeos para listar o que você já baixou."
+            },
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+        )
+        Spacer(Modifier.height(18.dp))
+        GradientButton(
+            text = if (asked) "Abrir configurações" else "Permitir acesso",
+            onClick = if (asked) onOpenSettings else onRequest,
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
+}
+
+private fun openAppSettings(context: Context) {
+    val intent = Intent(
+        Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+        Uri.fromParts("package", context.packageName, null)
+    ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    runCatching { context.startActivity(intent) }
 }
 
 private fun prettyName(name: String): String = name

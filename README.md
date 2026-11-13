@@ -5,7 +5,9 @@ um link. Cole o link, veja a prévia do vídeo no player e só então baixe — 
 qualidade original, sem marca d'água adicional.
 
 <p align="center">
-  <img src="docs/tela-inicial.png" width="260" alt="Tela inicial" />
+  <img src="docs/tela-inicial.png" width="240" alt="Tela inicial" />
+  <img src="docs/previa.png" width="240" alt="Prévia do vídeo" />
+  <img src="docs/biblioteca.png" width="240" alt="Meus vídeos" />
 </p>
 
 ## Funcionalidades
@@ -52,6 +54,20 @@ O app resolve tudo no próprio aparelho, sem depender de serviços de terceiros:
 
 - Android 8.0 (API 26) ou superior.
 - Android SDK 36, JDK 17+ e Gradle 8.13 (o wrapper já cuida do Gradle).
+
+## Instalando no aparelho
+
+O APK assinado pronto para uso fica em `dist/`:
+
+```bash
+adb install -r dist/BaixaVideo-1.0.0.apk
+sha256sum -c dist/BaixaVideo-1.0.0.apk.sha256   # confere a integridade
+```
+
+Também é possível copiar o APK para o celular e abrir o arquivo (é preciso
+autorizar "instalar apps desconhecidos" para o app de arquivos). Na primeira vez
+que abrir **Meus vídeos**, o Android pede acesso a fotos e vídeos — sem essa
+permissão a lista fica vazia, mas o download continua funcionando.
 
 ## Compilando
 

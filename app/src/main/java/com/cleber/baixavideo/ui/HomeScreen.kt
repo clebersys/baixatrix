@@ -4,6 +4,7 @@ package com.cleber.baixavideo.ui
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -208,15 +209,26 @@ fun HomeScreen(
                     isDownloading = state.isDownloading,
                     progress = state.downloadProgress,
                     savedPath = state.savedPath,
+                    savedUri = state.savedUri,
                     onSelectVariant = viewModel::selectVariant,
                     onDownload = startDownload,
-                    onOpen = { path ->
-                        if (!MediaIntents.openLocalVideo(context, path)) {
+                    onOpen = { path, uri ->
+                        val opened = if (uri != null) {
+                            MediaIntents.openUri(context, uri)
+                        } else {
+                            MediaIntents.openLocalVideo(context, path)
+                        }
+                        if (!opened) {
                             viewModel.showMessage("Nenhum app encontrado para abrir o vídeo.")
                         }
                     },
-                    onShare = { path ->
-                        if (!MediaIntents.shareLocalVideo(context, path)) {
+                    onShare = { path, uri ->
+                        val shared = if (uri != null) {
+                            MediaIntents.shareUri(context, uri)
+                        } else {
+                            MediaIntents.shareLocalVideo(context, path)
+                        }
+                        if (!shared) {
                             viewModel.showMessage("Não foi possível compartilhar o vídeo.")
                         }
                     }
@@ -410,10 +422,11 @@ private fun MediaCard(
     isDownloading: Boolean,
     progress: Int?,
     savedPath: String?,
+    savedUri: Uri?,
     onSelectVariant: (Int) -> Unit,
     onDownload: () -> Unit,
-    onOpen: (String) -> Unit,
-    onShare: (String) -> Unit
+    onOpen: (String, Uri?) -> Unit,
+    onShare: (String, Uri?) -> Unit
 ) {
     val variant = media.variants.getOrNull(selectedVariant) ?: media.bestVariant
     val headers = remember(media) { media.requestHeaders() }
@@ -504,6 +517,7 @@ private fun MediaCard(
                     isDownloading = isDownloading,
                     progress = progress,
                     savedPath = savedPath,
+                    savedUri = savedUri,
                     onDownload = onDownload,
                     onOpen = onOpen,
                     onShare = onShare
@@ -518,9 +532,10 @@ private fun DownloadSection(
     isDownloading: Boolean,
     progress: Int?,
     savedPath: String?,
+    savedUri: Uri?,
     onDownload: () -> Unit,
-    onOpen: (String) -> Unit,
-    onShare: (String) -> Unit
+    onOpen: (String, Uri?) -> Unit,
+    onShare: (String, Uri?) -> Unit
 ) {
     when {
         savedPath != null -> {
@@ -540,8 +555,8 @@ private fun DownloadSection(
                     )
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    SecondaryButton(text = "Abrir", onClick = { onOpen(savedPath) })
-                    SecondaryButton(text = "Compartilhar", onClick = { onShare(savedPath) })
+                    SecondaryButton(text = "Abrir", onClick = { onOpen(savedPath, savedUri) })
+                    SecondaryButton(text = "Compartilhar", onClick = { onShare(savedPath, savedUri) })
                 }
                 TextButton(onClick = onDownload) {
                     Text("Baixar novamente")
