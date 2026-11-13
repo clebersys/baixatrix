@@ -5,6 +5,7 @@ import android.content.Context
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Environment
+import android.os.ParcelFileDescriptor
 import com.cleber.baixavideo.data.model.ResolvedMedia
 import com.cleber.baixavideo.data.model.VideoVariant
 import kotlinx.coroutines.delay
@@ -28,7 +29,7 @@ class DownloadRepository(private val context: Context) {
     sealed interface State {
         /** progresso em 0..100, ou -1 quando o tamanho ainda é desconhecido. */
         data class Running(val progress: Int) : State
-        data class Completed(val path: String, val uri: Uri?) : State
+        data class Completed(val path: String, val uri: Uri?, val downloadId: Long) : State
         data class Failed(val reason: String) : State
     }
 
@@ -86,7 +87,7 @@ class DownloadRepository(private val context: Context) {
                             relativePath
                         ).absolutePath
                     val uri = scanMedia(path)
-                    emit(State.Completed(path, uri))
+                    emit(State.Completed(path, uri, downloadId))
                     return@flow
                 }
 
@@ -106,6 +107,13 @@ class DownloadRepository(private val context: Context) {
             }
             delay(400)
         }
+    }
+
+    /** Opens the completed DownloadManager file without requiring media-library access. */
+    fun openDownloadedFile(downloadId: Long): ParcelFileDescriptor {
+        val manager = context.getSystemService(DownloadManager::class.java)
+            ?: error("Serviço de download indisponível neste aparelho.")
+        return manager.openDownloadedFile(downloadId)
     }
 
     /**

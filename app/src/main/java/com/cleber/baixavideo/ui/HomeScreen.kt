@@ -81,9 +81,11 @@ import com.cleber.baixavideo.ui.components.LogoMark
 import com.cleber.baixavideo.ui.components.PlatformBadge
 import com.cleber.baixavideo.ui.components.VideoPreview
 import com.cleber.baixavideo.ui.theme.BrandGradient
+import com.cleber.baixavideo.util.BatchShareUtils
 import com.cleber.baixavideo.util.Formatters
 import com.cleber.baixavideo.util.LinkParser
 import com.cleber.baixavideo.util.MediaIntents
+import java.io.File
 
 @Composable
 fun HomeScreen(
@@ -95,18 +97,20 @@ fun HomeScreen(
     val context = LocalContext.current
     val clipboard = LocalClipboardManager.current
     val snackbarHostState = remember { SnackbarHostState() }
+    var splitAfterPermission by remember { mutableStateOf(false) }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
         if (granted) {
-            viewModel.download()
+            viewModel.download(splitAfterPermission)
         } else {
             viewModel.showMessage("Sem essa permissão o app não consegue salvar o vídeo.")
         }
+        splitAfterPermission = false
     }
 
-    val startDownload: () -> Unit = {
+    val startDownload: (Boolean) -> Unit = { splitAfterDownload ->
         val needsPermission = Build.VERSION.SDK_INT <= Build.VERSION_CODES.P &&
             ContextCompat.checkSelfPermission(
                 context,
@@ -114,9 +118,10 @@ fun HomeScreen(
             ) != PackageManager.PERMISSION_GRANTED
 
         if (needsPermission) {
+            splitAfterPermission = splitAfterDownload
             permissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
         } else {
-            viewModel.download()
+            viewModel.download(splitAfterDownload)
         }
     }
 
@@ -208,10 +213,23 @@ fun HomeScreen(
                     selectedVariant = state.selectedVariant,
                     isDownloading = state.isDownloading,
                     progress = state.downloadProgress,
+                    isSplitting = state.isSplitting,
+                    splitProgress = state.splitProgress,
                     savedPath = state.savedPath,
                     savedUri = state.savedUri,
+                    splitFiles = state.splitFiles,
+                    splitError = state.splitError,
                     onSelectVariant = viewModel::selectVariant,
                     onDownload = startDownload,
+                    onRetrySplit = viewModel::splitAgain,
+                    onShareParts = { files ->
+                        runCatching { BatchShareUtils.shareToAnyApp(context, files) }
+                            .onFailure { viewModel.showMessage("Não foi possível compartilhar as partes.") }
+                    },
+                    onSharePartsWhatsApp = { files ->
+                        runCatching { BatchShareUtils.shareToWhatsApp(context, files) }
+                            .onFailure { viewModel.showMessage("Não foi possível compartilhar no WhatsApp.") }
+                    },
                     onOpen = { path, uri ->
                         val opened = if (uri != null) {
                             MediaIntents.openUri(context, uri)
@@ -431,10 +449,17 @@ private fun MediaCard(
     selectedVariant: Int,
     isDownloading: Boolean,
     progress: Int?,
+    isSplitting: Boolean,
+    splitProgress: Float?,
     savedPath: String?,
     savedUri: Uri?,
+    splitFiles: List<File>,
+    splitError: String?,
     onSelectVariant: (Int) -> Unit,
-    onDownload: () -> Unit,
+    onDownload: (Boolean) -> Unit,
+    onRetrySplit: () -> Unit,
+    onShareParts: (List<File>) -> Unit,
+    onSharePartsWhatsApp: (List<File>) -> Unit,
     onOpen: (String, Uri?) -> Unit,
     onShare: (String, Uri?) -> Unit
 ) {
@@ -526,9 +551,16 @@ private fun MediaCard(
                 DownloadSection(
                     isDownloading = isDownloading,
                     progress = progress,
+                    isSplitting = isSplitting,
+                    splitProgress = splitProgress,
                     savedPath = savedPath,
                     savedUri = savedUri,
+                    splitFiles = splitFiles,
+                    splitError = splitError,
                     onDownload = onDownload,
+                    onRetrySplit = onRetrySplit,
+                    onShareParts = onShareParts,
+                    onSharePartsWhatsApp = onSharePartsWhatsApp,
                     onOpen = onOpen,
                     onShare = onShare
                 )
@@ -541,39 +573,20 @@ private fun MediaCard(
 private fun DownloadSection(
     isDownloading: Boolean,
     progress: Int?,
+    isSplitting: Boolean,
+    splitProgress: Float?,
     savedPath: String?,
     savedUri: Uri?,
-    onDownload: () -> Unit,
+    splitFiles: List<File>,
+    splitError: String?,
+    onDownload: (Boolean) -> Unit,
+    onRetrySplit: () -> Unit,
+    onShareParts: (List<File>) -> Unit,
+    onSharePartsWhatsApp: (List<File>) -> Unit,
     onOpen: (String, Uri?) -> Unit,
     onShare: (String, Uri?) -> Unit
 ) {
     when {
-        savedPath != null -> {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.CheckCircle,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                    Text(
-                        text = "Salvo em Filmes/BaixaVideo",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                }
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    SecondaryButton(text = "Abrir", onClick = { onOpen(savedPath, savedUri) })
-                    SecondaryButton(text = "Compartilhar", onClick = { onShare(savedPath, savedUri) })
-                }
-                TextButton(onClick = onDownload) {
-                    Text("Baixar novamente")
-                }
-            }
-        }
-
         isDownloading -> {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 val label = if (progress == null || progress < 0) {
@@ -599,12 +612,116 @@ private fun DownloadSection(
             }
         }
 
+        isSplitting -> {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                val percent = ((splitProgress ?: 0f) * 100).toInt().coerceIn(0, 100)
+                GradientButton(
+                    text = "Dividindo em partes... $percent%",
+                    onClick = {},
+                    enabled = false,
+                    loading = true
+                )
+                LinearProgressIndicator(
+                    progress = { splitProgress ?: 0f },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(50))
+                )
+                Text(
+                    text = "Cortes sem reencodar o vídeo; as partes serão salvas para compartilhar em lote.",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        savedPath != null -> {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.CheckCircle,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = "Salvo em Filmes/BaixaVideo",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    SecondaryButton(text = "Abrir", onClick = { onOpen(savedPath, savedUri) })
+                    SecondaryButton(text = "Compartilhar", onClick = { onShare(savedPath, savedUri) })
+                }
+
+                if (splitFiles.isNotEmpty()) {
+                    Surface(
+                        shape = RoundedCornerShape(18.dp),
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(14.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = "Dividido em ${splitFiles.size} parte(s) de até 30s",
+                                style = MaterialTheme.typography.titleSmall,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                            Text(
+                                text = "As partes mantêm a qualidade original. No WhatsApp, serão enviadas como documentos para evitar recompressão.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                SecondaryButton(
+                                    text = "Compartilhar partes",
+                                    onClick = { onShareParts(splitFiles) }
+                                )
+                                SecondaryButton(
+                                    text = "WhatsApp",
+                                    onClick = { onSharePartsWhatsApp(splitFiles) }
+                                )
+                            }
+                        }
+                    }
+                }
+
+                splitError?.let { error ->
+                    Text(
+                        text = "O vídeo foi baixado, mas não foi possível dividir: $error",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                    OutlinedButton(onClick = onRetrySplit, modifier = Modifier.fillMaxWidth()) {
+                        Text("Tentar dividir novamente")
+                    }
+                }
+
+                TextButton(onClick = { onDownload(false) }) {
+                    Text("Baixar novamente")
+                }
+            }
+        }
+
         else -> {
-            GradientButton(
-                text = "Baixar vídeo",
-                onClick = onDownload,
-                icon = painterResource(R.drawable.ic_download)
-            )
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                GradientButton(
+                    text = "Baixar vídeo",
+                    onClick = { onDownload(false) },
+                    icon = painterResource(R.drawable.ic_download)
+                )
+                OutlinedButton(
+                    onClick = { onDownload(true) },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Text("Baixar e dividir em partes de 30s")
+                }
+            }
             Text(
                 text = "O arquivo é salvo em Filmes/BaixaVideo, sem marca d'água adicional.",
                 style = MaterialTheme.typography.labelSmall,

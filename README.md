@@ -11,6 +11,11 @@ qualidade original, sem marca d'água adicional.
 </p>
 
 <p align="center">
+  <img src="docs/partes-30s.png" width="300" alt="Vídeo dividido em partes de 30 segundos" />
+  <img src="docs/compartilhar-lote.png" width="300" alt="Compartilhamento das partes em lote" />
+</p>
+
+<p align="center">
   <a href="https://github.com/clebersys/baixavideo/releases/latest">Baixar o APK</a> ·
   <a href="docs/privacidade.html">Política de privacidade</a> ·
   <a href="store/publicacao-play.md">Publicação na Play Store</a>
@@ -24,6 +29,9 @@ qualidade original, sem marca d'água adicional.
   duração e seletor de qualidade quando o site oferece mais de uma.
 - **Download em segundo plano** pelo DownloadManager: continua se você sair do
   app, aparece na notificação e é retomado se a conexão cair.
+- **Baixar e dividir em partes de 30s**: corta o vídeo nos keyframes sem
+  reencodificar, preservando a qualidade original. Depois, envia todas as partes
+  juntas para outro app ou para o WhatsApp como documentos (sem recompressão).
 - **Meus vídeos**: biblioteca dos arquivos salvos com miniatura, tamanho e data;
   abrir, compartilhar e excluir.
 - **Compartilhar para o app**: recebe links enviados de outros aplicativos
@@ -33,6 +41,8 @@ qualidade original, sem marca d'água adicional.
 - Tema claro/escuro, Material 3 e nada de anúncios ou rastreamento.
 
 Os arquivos ficam em **`Filmes/BaixaVideo`** e aparecem na galeria.
+As partes divididas ficam no armazenamento específico do app até serem
+compartilhadas; mantenha o BaixaVídeo aberto enquanto o processamento termina.
 
 ## Como a extração funciona
 
@@ -66,8 +76,8 @@ O app resolve tudo no próprio aparelho, sem depender de serviços de terceiros:
 O APK assinado pronto para uso fica em `dist/`:
 
 ```bash
-adb install -r dist/BaixaVideo-1.1.0.apk
-sha256sum -c dist/BaixaVideo-1.1.0.apk.sha256   # confere a integridade
+adb install -r dist/BaixaVideo-1.2.0.apk
+sha256sum -c dist/BaixaVideo-1.2.0.apk.sha256   # confere a integridade
 ```
 
 Também é possível copiar o APK para o celular e abrir o arquivo (é preciso

@@ -3,4 +3,7 @@
     <external-path
         name="movies"
         path="Movies/BaixaVideo/" />
+    <external-files-path
+        name="split_parts"
+        path="Movies/BaixaVideo/partes/" />
 </paths>

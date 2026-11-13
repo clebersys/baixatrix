@@ -1,4 +1,4 @@
-# Ficha da Play Store — BaixaVídeo 1.1.0
+# Ficha da Play Store — BaixaVídeo 1.2.0
 
 Arquivos de mídia em `store/`:
 
@@ -9,9 +9,11 @@ Arquivos de mídia em `store/`:
 | `capturas/01-inicio.jpg` | Captura de celular 1 |
 | `capturas/02-previa.jpg` | Captura de celular 2 |
 | `capturas/03-biblioteca.jpg` | Captura de celular 3 |
+| `capturas/04-divisao-30s.jpg` | Download e divisão em partes de 30s |
+| `capturas/05-compartilhar-lote.jpg` | Compartilhamento das partes em lote |
 
 Artefato de upload: `app/build/outputs/bundle/release/app-release.aab`
-(ou `dist/BaixaVideo-1.1.0.aab` — o AAB é assinado com a mesma keystore do APK).
+(ou `dist/BaixaVideo-1.2.0.aab` — o AAB é assinado com a mesma keystore do APK).
 
 ---
 
@@ -41,6 +43,7 @@ COMO FUNCIONA
 DESTAQUES
 • Prévia antes de baixar — nada é salvo sem você ver o vídeo.
 • Download em segundo plano: continua mesmo se você fechar o app, com notificação de progresso e retomada automática.
+• Baixar e dividir em partes de 30s sem reencodificar; compartilhe todas as partes de uma vez ou envie ao WhatsApp como documentos.
 • Meus vídeos: biblioteca com miniaturas, tamanho e data, para abrir, compartilhar ou excluir.
 • Recebe links de outros apps: no Instagram, toque em Compartilhar → BaixaVídeo.
 • Seletor de qualidade quando o site oferece mais de uma versão.
@@ -98,4 +101,5 @@ Primeira versão pública do BaixaVídeo:
 • recebimento de links compartilhados de outros apps
 • tema claro e escuro
 • assinatura do desenvolvedor: Desenvolvido por Cleber Reis
+• opção de baixar e dividir vídeos em partes de até 30 segundos, com compartilhamento em lote
 ```
