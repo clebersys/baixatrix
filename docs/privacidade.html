@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Política de Privacidade — BaixaVídeo</title>
+<style>
+  :root { color-scheme: light dark; }
+  body {
+    margin: 0 auto; max-width: 760px; padding: 40px 22px 80px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.65; background: #fff7f9; color: #1c1220;
+  }
+  h1 { font-size: 1.9rem; line-height: 1.2; margin: 0 0 6px; }
+  .grad {
+    background: linear-gradient(105deg, #ff9f43, #e1306c 45%, #8a3ffc);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .updated { color: #6c5a72; font-size: .9rem; margin-bottom: 28px; }
+  h2 { font-size: 1.15rem; margin-top: 34px; }
+  ul { padding-left: 22px; }
+  li { margin: 8px 0; }
+  table { border-collapse: collapse; width: 100%; font-size: .95rem; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid #e8dce9; vertical-align: top; }
+  code { background: #f2e6f3; padding: 1px 5px; border-radius: 5px; font-size: .88em; }
+  .card { background: #fff; border: 1px solid #f0dfe6; border-radius: 18px; padding: 18px 20px; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #141018; color: #f3e9f5; }
+    .card { background: #1d1622; border-color: #332538; }
+    th, td { border-color: #332538; }
+    code { background: #2a1f30; }
+    .updated { color: #b6a3bd; }
+  }
+</style>
+</head>
+<body>
+  <h1><span class="grad">BaixaVídeo</span> — Política de Privacidade</h1>
+  <p class="updated">Última atualização: 13 de novembro de 2026.</p>
+
+  <div class="card">
+    <strong>Resumo:</strong> o BaixaVídeo não coleta, não armazena e não
+    compartilha dados pessoais. Não há anúncios, analytics ou rastreamento.
+  </div>
+
+  <h2>O que o app faz com seus dados</h2>
+  <ul>
+    <li><strong>Links de vídeo</strong> são processados no próprio aparelho,
+      acessando diretamente Instagram ou Kwai. Nenhum link é enviado a
+      servidores do desenvolvedor.</li>
+    <li><strong>Cookie do Instagram</strong> (opcional): fica salvo apenas no
+      armazenamento local do app, é usado exclusivamente nas requisições ao
+      Instagram e pode ser apagado a qualquer momento em Ajustes.</li>
+    <li><strong>Servidor de extração</strong> (opcional): se você configurar um
+      endereço próprio, os links analisados serão enviados a esse servidor, sob
+      sua responsabilidade.</li>
+    <li><strong>Vídeos baixados</strong> são gravados na pasta pública
+      <code>Filmes/BaixaVideo</code> do aparelho.</li>
+    <li>O app não pede login, não acessa seus contatos e não usa
+      identificadores de publicidade.</li>
+  </ul>
+
+  <h2>Permissões e por que são necessárias</h2>
+  <table>
+    <tr><th>Permissão</th><th>Motivo</th></tr>
+    <tr><td><code>INTERNET</code></td><td>Acessar as páginas e os arquivos de vídeo.</td></tr>
+    <tr><td><code>ACCESS_NETWORK_STATE</code></td><td>Verificar a conexão antes dos downloads.</td></tr>
+    <tr><td><code>WRITE_EXTERNAL_STORAGE</code> (Android 8 e 9)</td><td>Salvar o vídeo em Filmes/BaixaVideo.</td></tr>
+    <tr><td><code>READ_MEDIA_VIDEO</code> (Android 13+) e <code>READ_EXTERNAL_STORAGE</code> (Android 12 e anteriores)</td><td>Listar na aba “Meus vídeos” os arquivos salvos na pasta do app. Opcional: negar só deixa a lista vazia.</td></tr>
+  </table>
+
+  <h2>Retenção e exclusão</h2>
+  <p>Os vídeos baixados permanecem apenas no seu aparelho. Para excluir tudo,
+  apague a pasta <code>Filmes/BaixaVideo</code> e desinstale o app.</p>
+
+  <h2>Contato</h2>
+  <p>clebersys@users.noreply.github.com</p>
+</body>
+</html>

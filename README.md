@@ -10,6 +10,12 @@ qualidade original, sem marca d'água adicional.
   <img src="docs/biblioteca.png" width="240" alt="Meus vídeos" />
 </p>
 
+<p align="center">
+  <a href="https://github.com/clebersys/baixavideo/releases/latest">Baixar o APK</a> ·
+  <a href="docs/privacidade.html">Política de privacidade</a> ·
+  <a href="store/publicacao-play.md">Publicação na Play Store</a>
+</p>
+
 ## Funcionalidades
 
 - **Colar link** com um toque (ou digitando) — aceita links de `instagram.com/p`,
@@ -69,6 +75,9 @@ autorizar "instalar apps desconhecidos" para o app de arquivos). Na primeira vez
 que abrir **Meus vídeos**, o Android pede acesso a fotos e vídeos — sem essa
 permissão a lista fica vazia, mas o download continua funcionando.
 
+A versão mais recente também está em
+[Releases](https://github.com/clebersys/baixavideo/releases/latest).
+
 ## Compilando
 
 ```bash
@@ -123,6 +132,18 @@ app/src/main/java/com/cleber/baixavideo/
 └── util/                           # links, HTML/JSON, formatação, intents
 backend/                            # FastAPI + yt-dlp (opcional)
 ```
+
+## Publicação
+
+O pacote para a Play Store está pronto:
+
+- **AAB assinado**: `dist/BaixaVideo-1.0.0.aab` (`./gradlew bundleRelease`)
+- **Ficha pronta** (título, descrições, categoria, Data safety): [`store/ficha-play.md`](store/ficha-play.md)
+- **Artes**: ícone 512, gráfico de destaque 1024×500 e capturas em [`store/`](store/)
+- **Passo a passo do Play Console**: [`store/publicacao-play.md`](store/publicacao-play.md)
+
+A política de privacidade é publicada pelo GitHub Pages em
+<https://clebersys.github.io/baixavideo/privacidade.html>.
 
 ## Privacidade e uso responsável
 
