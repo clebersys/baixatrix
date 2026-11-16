@@ -76,8 +76,8 @@ O app resolve tudo no próprio aparelho, sem depender de serviços de terceiros:
 O APK assinado pronto para uso fica em `dist/`:
 
 ```bash
-adb install -r dist/BaixaVideo-1.2.0.apk
-sha256sum -c dist/BaixaVideo-1.2.0.apk.sha256   # confere a integridade
+adb install -r dist/BaixaVideo-1.2.1.apk
+sha256sum -c dist/BaixaVideo-1.2.1.apk.sha256   # confere a integridade
 ```
 
 Também é possível copiar o APK para o celular e abrir o arquivo (é preciso

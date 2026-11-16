@@ -25,7 +25,7 @@ então esses passos são manuais.
 
 1. Gere/atualize o pacote: `./gradlew bundleRelease`
 2. Copie `app/build/outputs/bundle/release/app-release.aab` (ou use
-   `dist/BaixaVideo-1.2.0.aab`).
+   `dist/BaixaVideo-1.2.1.aab`).
 3. Play Console → **Testar e lançar → Teste interno → Criar nova versão** →
    envie o `.aab`.
 4. Ative o **Play App Signing** (recomendado). Guarde a keystore atual: ela
@@ -93,7 +93,7 @@ Alternativas de distribuição que não dependem da Play Store:
 
 ```bash
 cd /home/cleber/Documentos/BaixaVideo
-gh release create v1.2.0 dist/BaixaVideo-1.2.0.apk dist/BaixaVideo-1.2.0.apk.sha256 \
-  --title "BaixaVídeo 1.2.0" \
-  --notes "Primeira versão: download de vídeos do Instagram e Kwai com prévia, biblioteca e compartilhamento."
+gh release create v1.2.1 dist/BaixaVideo-1.2.1.apk dist/BaixaVideo-1.2.1.apk.sha256 \
+  --title "BaixaVídeo 1.2.1" \
+  --notes "Correção visual dos botões de compartilhamento: rótulos completos em telas estreitas. Inclui APK/AAB assinados, checksums e capturas atualizadas."
 ```
