@@ -14,15 +14,15 @@ val keystoreProperties = Properties().apply {
 }
 
 android {
-    namespace = "com.cleber.baixavideo"
+    namespace = "com.cleber.baixatrix"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.cleber.baixavideo"
+        applicationId = "com.cleber.baixatrix"
         minSdk = 26
         targetSdk = 36
-        versionCode = 4
-        versionName = "1.2.1"
+        versionCode = 6
+        versionName = "2.0.0"
     }
 
     androidResources {

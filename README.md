@@ -1,4 +1,4 @@
-# BaixaVídeo
+# BaixaTrix
 
 Aplicativo Android para baixar vídeos do **Instagram** e do **Kwai** a partir de
 um link. Cole o link, veja a prévia do vídeo no player e só então baixe — em
@@ -16,7 +16,7 @@ qualidade original, sem marca d'água adicional.
 </p>
 
 <p align="center">
-  <a href="https://github.com/clebersys/baixavideo/releases/latest">Baixar o APK</a> ·
+  <a href="https://github.com/clebersys/baixatrix/releases/latest">Baixar o APK</a> ·
   <a href="docs/privacidade.html">Política de privacidade</a> ·
   <a href="store/publicacao-play.md">Publicação na Play Store</a>
 </p>
@@ -35,14 +35,14 @@ qualidade original, sem marca d'água adicional.
 - **Meus vídeos**: biblioteca dos arquivos salvos com miniatura, tamanho e data;
   abrir, compartilhar e excluir.
 - **Compartilhar para o app**: recebe links enviados de outros aplicativos
-  (Instagram → Compartilhar → BaixaVídeo).
+  (Instagram → Compartilhar → BaixaTrix).
 - **Ajustes**: servidor de extração opcional e cookie do Instagram para quando a
   plataforma exigir login.
 - Tema claro/escuro, Material 3 e nada de anúncios ou rastreamento.
 
-Os arquivos ficam em **`Filmes/BaixaVideo`** e aparecem na galeria.
+Os arquivos ficam em **`Filmes/BaixaTrix`** e aparecem na galeria.
 As partes divididas ficam no armazenamento específico do app até serem
-compartilhadas; mantenha o BaixaVídeo aberto enquanto o processamento termina.
+compartilhadas; mantenha o BaixaTrix aberto enquanto o processamento termina.
 
 ## Como a extração funciona
 
@@ -76,9 +76,13 @@ O app resolve tudo no próprio aparelho, sem depender de serviços de terceiros:
 O APK assinado pronto para uso fica em `dist/`:
 
 ```bash
-adb install -r dist/BaixaVideo-1.2.1.apk
-sha256sum -c dist/BaixaVideo-1.2.1.apk.sha256   # confere a integridade
+adb install -r dist/BaixaTrix-2.0.0.apk
+sha256sum -c dist/BaixaTrix-2.0.0.apk.sha256   # confere a integridade
 ```
+
+**BaixaTrix 2.0.0 usa um novo identificador Android**
+(`com.cleber.baixatrix`). Ele é instalado como um app separado do antigo
+BaixaVídeo; a pasta de download também mudou para `Filmes/BaixaTrix`.
 
 Também é possível copiar o APK para o celular e abrir o arquivo (é preciso
 autorizar "instalar apps desconhecidos" para o app de arquivos). Na primeira vez
@@ -86,7 +90,7 @@ que abrir **Meus vídeos**, o Android pede acesso a fotos e vídeos — sem essa
 permissão a lista fica vazia, mas o download continua funcionando.
 
 A versão mais recente também está em
-[Releases](https://github.com/clebersys/baixavideo/releases/latest).
+[Releases](https://github.com/clebersys/baixatrix/releases/latest).
 
 ## Compilando
 
@@ -127,9 +131,9 @@ cookies e publicação fora da rede local em [`backend/README.md`](backend/READM
 ## Estrutura
 
 ```
-app/src/main/java/com/cleber/baixavideo/
+app/src/main/java/com/cleber/baixatrix/
 ├── MainActivity.kt                 # entrada, edge-to-edge, link compartilhado
-├── BaixaVideoApplication.kt        # DataStore + Coil (miniaturas de vídeo)
+├── BaixaTrixApplication.kt        # DataStore + Coil (miniaturas de vídeo)
 ├── data/
 │   ├── MediaRepository.kt          # orquestra extratores nativos e o backend
 │   ├── DownloadRepository.kt       # DownloadManager + progresso
@@ -147,13 +151,17 @@ backend/                            # FastAPI + yt-dlp (opcional)
 
 O pacote para a Play Store está pronto:
 
-- **AAB assinado**: `dist/BaixaVideo-1.1.0.aab` (`./gradlew bundleRelease`)
+- **AAB assinado**: `dist/BaixaTrix-2.0.0.aab` (`./gradlew bundleRelease`)
 - **Ficha pronta** (título, descrições, categoria, Data safety): [`store/ficha-play.md`](store/ficha-play.md)
 - **Artes**: ícone 512, gráfico de destaque 1024×500 e capturas em [`store/`](store/)
 - **Passo a passo do Play Console**: [`store/publicacao-play.md`](store/publicacao-play.md)
 
+> A versão 2.0.0 usa o novo `applicationId` `com.cleber.baixatrix`. Se o antigo
+> BaixaVídeo já tiver uma ficha no Play Console, esta versão precisa ser criada
+> como um app/listing separado — não pode atualizar o pacote antigo.
+
 A política de privacidade é publicada pelo GitHub Pages em
-<https://clebersys.github.io/baixavideo/privacidade.html>.
+<https://clebersys.github.io/baixatrix/privacidade.html>.
 
 ## Privacidade e uso responsável
 

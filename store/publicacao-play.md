@@ -16,16 +16,21 @@ então esses passos são manuais.
 
 ## 2. Criar o app
 
-- Nome: `BaixaVídeo — Instagram e Kwai`
+- Nome: `BaixaTrix — Instagram e Kwai`
 - Idioma padrão: Português (Brasil)
 - Tipo: Aplicativo · Gratuito
 - Declarações: app não é para crianças; contém anúncios = **não**
+- `applicationId`: `com.cleber.baixatrix`
+
+> BaixaTrix 2.0.0 tem um `applicationId` novo. Não envie este AAB para uma
+> ficha criada com o pacote antigo `com.cleber.baixavideo`; crie uma ficha
+> separada no Play Console.
 
 ## 3. Enviar o AAB
 
 1. Gere/atualize o pacote: `./gradlew bundleRelease`
 2. Copie `app/build/outputs/bundle/release/app-release.aab` (ou use
-   `dist/BaixaVideo-1.2.1.aab`).
+   `dist/BaixaTrix-2.0.0.aab`).
 3. Play Console → **Testar e lançar → Teste interno → Criar nova versão** →
    envie o `.aab`.
 4. Ative o **Play App Signing** (recomendado). Guarde a keystore atual: ela
@@ -50,10 +55,10 @@ A página está em `docs/privacidade.html` e é publicada pelo GitHub Pages:
 
 1. No repositório: **Settings → Pages → Source: Deploy from a branch →
    Branch `main` / pasta `/docs`** (ou rode o comando abaixo).
-2. URL final: <https://clebersys.github.io/baixavideo/privacidade.html>
+2. URL final: <https://clebersys.github.io/baixatrix/privacidade.html>
 
 ```bash
-gh api -X POST repos/clebersys/baixavideo/pages \
+gh api -X POST repos/clebersys/baixatrix/pages \
   -f 'source[branch]=main' -f 'source[path]=/docs'
 ```
 
@@ -93,7 +98,7 @@ Alternativas de distribuição que não dependem da Play Store:
 
 ```bash
 cd /home/cleber/Documentos/BaixaVideo
-gh release create v1.2.1 dist/BaixaVideo-1.2.1.apk dist/BaixaVideo-1.2.1.apk.sha256 \
-  --title "BaixaVídeo 1.2.1" \
-  --notes "Correção visual dos botões de compartilhamento: rótulos completos em telas estreitas. Inclui APK/AAB assinados, checksums e capturas atualizadas."
+gh release create v2.0.0 dist/BaixaTrix-2.0.0.apk dist/BaixaTrix-2.0.0.apk.sha256 \
+  --title "BaixaTrix 2.0.0" \
+  --notes "Apresentamos BaixaTrix, com nova identidade visual e pasta Filmes/BaixaTrix. Botões de compartilhar com rótulos completos em telas estreitas. Esta versão usa o novo applicationId com.cleber.baixatrix."
 ```

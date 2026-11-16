@@ -1,5 +1,5 @@
 """
-Servidor de extração opcional do BaixaVídeo.
+Servidor de extração opcional do BaixaTrix.
 
 O app tenta extrair o vídeo sozinho (Instagram e Kwai). Quando o Instagram
 passa a exigir login, este servidor resolve o link com yt-dlp — inclusive
@@ -27,7 +27,7 @@ from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.responses import JSONResponse
 from yt_dlp import YoutubeDL
 
-app = FastAPI(title="BaixaVídeo Resolver", version="1.0.0")
+app = FastAPI(title="BaixaTrix Resolver", version="1.0.0")
 
 COOKIES_FILE = os.environ.get("YTDLP_COOKIES", "")
 API_KEY = os.environ.get("API_KEY", "")

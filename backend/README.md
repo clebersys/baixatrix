@@ -1,4 +1,4 @@
-# Servidor de extração do BaixaVídeo
+# Servidor de extração do BaixaTrix
 
 O app resolve Instagram e Kwai sozinho na maioria dos casos. Este servidor é a
 alternativa para quando o Instagram exige login: ele usa `yt-dlp` (com os seus
@@ -24,7 +24,7 @@ uvicorn app:app --host 0.0.0.0 --port 8000
 
 ## Configurando no app
 
-1. Abra o **BaixaVídeo** → **Ajustes**.
+1. Abra o **BaixaTrix** → **Ajustes**.
 2. Em *Servidor de extração*, coloque `http://SEU_IP:8000/resolve`.
 3. Salve. A partir daí, se a extração local falhar, o app usa o servidor.
 

@@ -1,4 +1,4 @@
-# Ficha da Play Store — BaixaVídeo 1.2.1
+# Ficha da Play Store — BaixaTrix 2.0.0
 
 Arquivos de mídia em `store/`:
 
@@ -13,14 +13,14 @@ Arquivos de mídia em `store/`:
 | `capturas/05-compartilhar-lote.jpg` | Compartilhamento das partes em lote |
 
 Artefato de upload: `app/build/outputs/bundle/release/app-release.aab`
-(ou `dist/BaixaVideo-1.2.1.aab` — o AAB é assinado com a mesma keystore do APK).
+(ou `dist/BaixaTrix-2.0.0.aab` — o AAB é assinado com a mesma keystore do APK).
 
 ---
 
 ## Nome do app (máx. 30)
 
 ```
-BaixaVídeo — Instagram e Kwai
+BaixaTrix — Instagram e Kwai
 ```
 
 ## Descrição curta (máx. 80)
@@ -32,20 +32,20 @@ Salve vídeos do Instagram e do Kwai com prévia antes de baixar.
 ## Descrição completa (máx. 4000)
 
 ```
-BaixaVídeo é o jeito mais direto de guardar aquele vídeo do Instagram ou do Kwai: cole o link, assista à prévia no player e só então baixe — em qualidade original e sem marca d'água adicional.
+BaixaTrix é o jeito mais direto de guardar aquele vídeo do Instagram ou do Kwai: cole o link, assista à prévia no player e só então baixe — em qualidade original e sem marca d'água adicional.
 
 COMO FUNCIONA
 1. Copie o link do vídeo no Instagram ou no Kwai.
-2. Abra o BaixaVídeo: o link é detectado automaticamente (ou toque em Colar).
+2. Abra o BaixaTrix: o link é detectado automaticamente (ou toque em Colar).
 3. Veja a prévia no player, confira autor, duração e qualidade.
-4. Toque em Baixar vídeo. Pronto: o arquivo vai para Filmes/BaixaVideo.
+4. Toque em Baixar vídeo. Pronto: o arquivo vai para Filmes/BaixaTrix.
 
 DESTAQUES
 • Prévia antes de baixar — nada é salvo sem você ver o vídeo.
 • Download em segundo plano: continua mesmo se você fechar o app, com notificação de progresso e retomada automática.
 • Baixar e dividir em partes de 30s sem reencodificar; compartilhe todas as partes de uma vez ou envie ao WhatsApp como documentos.
 • Meus vídeos: biblioteca com miniaturas, tamanho e data, para abrir, compartilhar ou excluir.
-• Recebe links de outros apps: no Instagram, toque em Compartilhar → BaixaVídeo.
+• Recebe links de outros apps: no Instagram, toque em Compartilhar → BaixaTrix.
 • Seletor de qualidade quando o site oferece mais de uma versão.
 • Tema claro e escuro, Material 3, em português.
 
@@ -56,7 +56,7 @@ QUANDO O INSTAGRAM PEDE LOGIN
 Alguns posts só ficam disponíveis para contas logadas. Nesses casos o app avisa e oferece duas saídas opcionais: informar o cookie sessionid da sua própria conta em Ajustes ou apontar para um servidor de extração próprio (código incluído no projeto).
 
 USO RESPONSÁVEL
-Baixe apenas vídeos seus ou que você tenha autorização para usar. Respeite direitos autorais e os Termos de Uso do Instagram e do Kwai. O BaixaVídeo não é afiliado a essas plataformas.
+Baixe apenas vídeos seus ou que você tenha autorização para usar. Respeite direitos autorais e os Termos de Uso do Instagram e do Kwai. O BaixaTrix não é afiliado a essas plataformas.
 
 Requisitos: Android 8.0 ou superior.
 ```
@@ -66,8 +66,8 @@ Requisitos: Android 8.0 ou superior.
 - Categoria: **Ferramentas** (Tools)
 - Tags: download de vídeo, Instagram, Kwai, player
 - E-mail de contato: clebersys@users.noreply.github.com
-- Site: https://github.com/clebersys/baixavideo
-- Política de privacidade: https://clebersys.github.io/baixavideo/privacidade.html
+- Site: https://github.com/clebersys/baixatrix
+- Política de privacidade: https://clebersys.github.io/baixatrix/privacidade.html
 
 ## Classificação de conteúdo (questionário)
 
@@ -95,7 +95,8 @@ Requisitos: Android 8.0 ou superior.
 ## Novidades desta versão (release notes)
 
 ```
-Correção visual nos botões de compartilhamento:
-• rótulos completos e legíveis em telas estreitas
-• ações Abrir, Compartilhar, Compartilhar partes e WhatsApp em largura total
+Apresentamos BaixaTrix!
+• nova marca e identidade visual em todo o aplicativo
+• pasta de downloads Filmes/BaixaTrix
+• botões de compartilhamento com rótulos completos em telas estreitas
 ```
