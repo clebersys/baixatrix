@@ -30,7 +30,7 @@ então esses passos são manuais.
 
 1. Gere/atualize o pacote: `./gradlew bundleRelease`
 2. Copie `app/build/outputs/bundle/release/app-release.aab` (ou use
-   `dist/BaixaTrix-2.0.0.aab`).
+   `dist/BaixaTrix-2.1.0.aab`).
 3. Play Console → **Testar e lançar → Teste interno → Criar nova versão** →
    envie o `.aab`.
 4. Ative o **Play App Signing** (recomendado). Guarde a keystore atual: ela
@@ -98,7 +98,7 @@ Alternativas de distribuição que não dependem da Play Store:
 
 ```bash
 cd /home/cleber/Documentos/BaixaVideo
-gh release create v2.0.0 dist/BaixaTrix-2.0.0.apk dist/BaixaTrix-2.0.0.apk.sha256 \
-  --title "BaixaTrix 2.0.0" \
-  --notes "Apresentamos BaixaTrix, com nova identidade visual e pasta Filmes/BaixaTrix. Botões de compartilhar com rótulos completos em telas estreitas. Esta versão usa o novo applicationId com.cleber.baixatrix."
+gh release create v2.1.0 dist/BaixaTrix-2.1.0.apk dist/BaixaTrix-2.1.0.apk.sha256 \
+  --title "BaixaTrix 2.1.0" \
+  --notes "Ajustes simplificados: removida a configuração avançada de servidor e qualquer campo de cookie/sessionid. O app usa os extratores locais para Instagram e Kwai."
 ```

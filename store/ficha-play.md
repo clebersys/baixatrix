@@ -1,4 +1,4 @@
-# Ficha da Play Store — BaixaTrix 2.0.0
+# Ficha da Play Store — BaixaTrix 2.1.0
 
 Arquivos de mídia em `store/`:
 
@@ -13,7 +13,7 @@ Arquivos de mídia em `store/`:
 | `capturas/05-compartilhar-lote.jpg` | Compartilhamento das partes em lote |
 
 Artefato de upload: `app/build/outputs/bundle/release/app-release.aab`
-(ou `dist/BaixaTrix-2.0.0.aab` — o AAB é assinado com a mesma keystore do APK).
+(ou `dist/BaixaTrix-2.1.0.aab` — o AAB é assinado com a mesma keystore do APK).
 
 ---
 
@@ -95,8 +95,7 @@ Requisitos: Android 8.0 ou superior.
 ## Novidades desta versão (release notes)
 
 ```
-Apresentamos BaixaTrix!
-• nova marca e identidade visual em todo o aplicativo
-• pasta de downloads Filmes/BaixaTrix
-• botões de compartilhamento com rótulos completos em telas estreitas
+• Ajustes simplificados: removida a configuração avançada de servidor de extração.
+• BaixaTrix usa apenas os extratores locais para Instagram e Kwai.
+• Nenhuma opção para inserir ou armazenar cookies/sessionid do Instagram.
 ```
