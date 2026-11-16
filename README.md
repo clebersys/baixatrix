@@ -51,17 +51,20 @@ O app resolve tudo no próprio aparelho, sem depender de serviços de terceiros:
 | Plataforma | Estratégia |
 |---|---|
 | **Kwai** | A página do vídeo entrega o MP4 no HTML (`<a-video-player src=…>`). O app segue o link curto (`k.kwai.com`), pega o vídeo principal (ignorando recomendações) e usa capa/título do Open Graph. |
-| **Instagram** | A página de *embed* (`/embed/captioned/`) entrega o JSON completo do post — inclusive `video_url` — quando a requisição vem com User-Agent de iPhone ou de robô de indexação. O app tenta iOS, depois Googlebot, depois a API interna (com cookie) e, por fim, as tags Open Graph. |
+| **Instagram** | Para posts públicos, o app tenta a página de *embed* (`/embed/captioned/`), depois a API interna e as tags Open Graph. Se o Instagram exigir login para um post público, o usuário pode inserir manualmente seu próprio `sessionid` em Ajustes. O BaixaTrix nunca lê esse cookie do app Instagram. |
 
 ### Limitações reais (leia antes de usar)
 
-- **Posts privados** e conteúdo removido nunca são acessíveis.
-- O Instagram passou a exigir login em boa parte dos acessos. Quando isso
-  acontece, o app avisa e você tem duas saídas:
-  1. **Cookie `sessionid`** de uma conta sua, colado em *Ajustes* (o app usa esse
-     cookie nas chamadas à API interna);
-  2. **Servidor de extração** próprio (pasta [`backend/`](backend/)) com
-     `yt-dlp` — mais confiável e também cobre outros sites.
+- **Posts privados não são suportados pelo resolver nativo do BaixaTrix.** O
+  app não importa cookies automaticamente do Instagram; inserir um `sessionid`
+  manualmente não é uma opção para baixar posts privados.
+- Para posts **públicos** que o Instagram temporariamente bloqueia sem login,
+  pode-se inserir manualmente o `sessionid` da própria conta em *Ajustes*.
+- O servidor opcional em [`backend/`](backend/) é um serviço separado. Se você
+  configurá-lo com cookies próprios, ele poderá acessar conteúdo que essa conta
+  consegue ver, inclusive posts privados. Isso é comportamento do backend
+  externo, não suporte nativo do BaixaTrix. Use somente conteúdo seu ou para o
+  qual tenha autorização.
 - Instagram e Kwai mudam o layout com frequência. Os extratores foram testados
   em novembro de 2026; se pararem de funcionar, a atualização é pontual nos
   arquivos `data/resolver/*.kt` (ou use o backend, que se atualiza via `yt-dlp`).

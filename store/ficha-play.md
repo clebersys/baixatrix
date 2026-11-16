@@ -52,8 +52,8 @@ DESTAQUES
 PRIVACIDADE
 Nenhum cadastro, nenhum anúncio, nenhum rastreamento. Os links são resolvidos no próprio aparelho e os vídeos ficam só na sua memória. O cookie do Instagram, opcional, é guardado apenas no armazenamento local do app e pode ser apagado em Ajustes.
 
-QUANDO O INSTAGRAM PEDE LOGIN
-Alguns posts só ficam disponíveis para contas logadas. Nesses casos o app avisa e oferece duas saídas opcionais: informar o cookie sessionid da sua própria conta em Ajustes ou apontar para um servidor de extração próprio (código incluído no projeto).
+CONTEÚDO PRIVADO E LOGIN
+O resolver nativo do BaixaTrix não oferece suporte a downloads de posts privados, e o app nunca captura automaticamente cookies ou sessões do Instagram. Para posts públicos que o Instagram temporariamente bloqueia sem login, o usuário pode inserir manualmente o sessionid da própria conta em Ajustes. Um backend próprio com cookies é um serviço externo e pode acessar posts privados que essa conta consiga ver; esse comportamento não é suporte nativo do BaixaTrix.
 
 USO RESPONSÁVEL
 Baixe apenas vídeos seus ou que você tenha autorização para usar. Respeite direitos autorais e os Termos de Uso do Instagram e do Kwai. O BaixaTrix não é afiliado a essas plataformas.

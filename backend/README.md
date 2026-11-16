@@ -43,8 +43,10 @@ servidor resolver com uma conta sua:
 3. Suba o serviço com `YTDLP_COOKIES=/data/cookies.txt` (já é o padrão no
    `docker-compose.yml`).
 
-Use somente uma conta sua. Cookies dão acesso à conta: mantenha o servidor
-privado e nunca compartilhe o arquivo.
+Cookies podem permitir que o `yt-dlp` acesse conteúdo que a conta consegue ver,
+inclusive posts privados. Isso é comportamento do backend externo, não suporte
+nativo do BaixaTrix. Use somente conteúdo seu ou autorizado; mantenha o servidor
+privado e nunca compartilhe o arquivo de cookies.
 
 ## API
 
