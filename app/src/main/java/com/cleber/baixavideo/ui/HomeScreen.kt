@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -651,9 +650,21 @@ private fun DownloadSection(
                         style = MaterialTheme.typography.titleMedium
                     )
                 }
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    SecondaryButton(text = "Abrir", onClick = { onOpen(savedPath, savedUri) })
-                    SecondaryButton(text = "Compartilhar", onClick = { onShare(savedPath, savedUri) })
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedButton(
+                        onClick = { onOpen(savedPath, savedUri) },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(14.dp)
+                    ) {
+                        Text("Abrir", maxLines = 1)
+                    }
+                    OutlinedButton(
+                        onClick = { onShare(savedPath, savedUri) },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(14.dp)
+                    ) {
+                        Text("Compartilhar", maxLines = 1)
+                    }
                 }
 
                 if (splitFiles.isNotEmpty()) {
@@ -676,15 +687,21 @@ private fun DownloadSection(
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
-                            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                                SecondaryButton(
-                                    text = "Compartilhar partes",
-                                    onClick = { onShareParts(splitFiles) }
-                                )
-                                SecondaryButton(
-                                    text = "WhatsApp",
-                                    onClick = { onSharePartsWhatsApp(splitFiles) }
-                                )
+                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                OutlinedButton(
+                                    onClick = { onShareParts(splitFiles) },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = RoundedCornerShape(14.dp)
+                                ) {
+                                    Text("Compartilhar partes", maxLines = 1)
+                                }
+                                OutlinedButton(
+                                    onClick = { onSharePartsWhatsApp(splitFiles) },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = RoundedCornerShape(14.dp)
+                                ) {
+                                    Text("WhatsApp", maxLines = 1)
+                                }
                             }
                         }
                     }
@@ -728,16 +745,5 @@ private fun DownloadSection(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
-    }
-}
-
-@Composable
-private fun RowScope.SecondaryButton(text: String, onClick: () -> Unit) {
-    OutlinedButton(
-        onClick = onClick,
-        shape = RoundedCornerShape(14.dp),
-        modifier = Modifier.weight(1f)
-    ) {
-        Text(text)
     }
 }
