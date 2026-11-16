@@ -35,8 +35,7 @@ class DownloadRepository(private val context: Context) {
 
     fun download(
         media: ResolvedMedia,
-        variant: VideoVariant,
-        cookie: String?
+        variant: VideoVariant
     ): Flow<State> = flow {
         val fileName = fileNameFor(media)
         val relativePath = "$FOLDER_NAME/$fileName"
@@ -50,7 +49,7 @@ class DownloadRepository(private val context: Context) {
             .setAllowedOverRoaming(false)
             .setDestinationInExternalPublicDir(Environment.DIRECTORY_MOVIES, relativePath)
 
-        media.requestHeaders(cookie).forEach { (key, value) ->
+        media.requestHeaders().forEach { (key, value) ->
             runCatching { request.addRequestHeader(key, value) }
         }
 

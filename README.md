@@ -36,8 +36,7 @@ qualidade original, sem marca d'água adicional.
   abrir, compartilhar e excluir.
 - **Compartilhar para o app**: recebe links enviados de outros aplicativos
   (Instagram → Compartilhar → BaixaTrix).
-- **Ajustes**: servidor de extração opcional e cookie do Instagram para quando a
-  plataforma exigir login.
+- **Ajustes**: endereço de um servidor de extração próprio, opcional.
 - Tema claro/escuro, Material 3 e nada de anúncios ou rastreamento.
 
 Os arquivos ficam em **`Filmes/BaixaTrix`** e aparecem na galeria.
@@ -51,15 +50,13 @@ O app resolve tudo no próprio aparelho, sem depender de serviços de terceiros:
 | Plataforma | Estratégia |
 |---|---|
 | **Kwai** | A página do vídeo entrega o MP4 no HTML (`<a-video-player src=…>`). O app segue o link curto (`k.kwai.com`), pega o vídeo principal (ignorando recomendações) e usa capa/título do Open Graph. |
-| **Instagram** | Para posts públicos, o app tenta a página de *embed* (`/embed/captioned/`), depois a API interna e as tags Open Graph. Se o Instagram exigir login para um post público, o usuário pode inserir manualmente seu próprio `sessionid` em Ajustes. O BaixaTrix nunca lê esse cookie do app Instagram. |
+| **Instagram** | Para posts públicos, o app tenta a página de *embed* (`/embed/captioned/`) e as tags Open Graph. O app não solicita, aceita nem lê cookies ou `sessionid` do Instagram. |
 
 ### Limitações reais (leia antes de usar)
 
-- **Posts privados não são suportados pelo resolver nativo do BaixaTrix.** O
-  app não importa cookies automaticamente do Instagram; inserir um `sessionid`
-  manualmente não é uma opção para baixar posts privados.
-- Para posts **públicos** que o Instagram temporariamente bloqueia sem login,
-  pode-se inserir manualmente o `sessionid` da própria conta em *Ajustes*.
+- **Posts privados não são suportados pelo BaixaTrix.** O app não solicita,
+  aceita nem importa cookies ou `sessionid` do Instagram.
+- Alguns posts **públicos** podem não ser resolvidos se o Instagram exigir login.
 - O servidor opcional em [`backend/`](backend/) é um serviço separado. Se você
   configurá-lo com cookies próprios, ele poderá acessar conteúdo que essa conta
   consegue ver, inclusive posts privados. Isso é comportamento do backend

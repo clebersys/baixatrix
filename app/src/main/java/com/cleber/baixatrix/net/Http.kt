@@ -27,11 +27,6 @@ object Http {
     const val GOOGLEBOT_UA =
         "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
 
-    const val INSTAGRAM_APP_UA =
-        "Instagram 219.0.0.12.117 Android (33/13; 420dpi; 1080x2400; samsung; SM-G991B; o1s; exynos2100; pt_BR; 346146493)"
-
-    const val INSTAGRAM_APP_ID = "936619743392459"
-
     val client: OkHttpClient by lazy {
         OkHttpClient.Builder()
             .connectTimeout(20, TimeUnit.SECONDS)

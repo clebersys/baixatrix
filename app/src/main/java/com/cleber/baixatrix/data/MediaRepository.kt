@@ -25,7 +25,7 @@ class MediaRepository(private val settings: SettingsStore) {
         var friendly: String? = null
 
         val nativeResolvers: List<PlatformResolver> = when (platform) {
-            Platform.INSTAGRAM -> listOf(InstagramResolver(config.instagramCookie.ifBlank { null }))
+            Platform.INSTAGRAM -> listOf(InstagramResolver())
             Platform.KWAI -> listOf(KwaiResolver())
             Platform.OTHER -> emptyList()
         }

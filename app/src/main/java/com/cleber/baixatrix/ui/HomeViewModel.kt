@@ -8,7 +8,6 @@ import androidx.lifecycle.viewModelScope
 import com.cleber.baixatrix.BaixaTrixApplication
 import com.cleber.baixatrix.data.DownloadRepository
 import com.cleber.baixatrix.data.MediaRepository
-import com.cleber.baixatrix.data.SettingsStore
 import com.cleber.baixatrix.data.model.ResolveException
 import com.cleber.baixatrix.data.model.ResolvedMedia
 import com.cleber.baixatrix.data.processing.VideoSplitter
@@ -53,7 +52,6 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private val app = application as BaixaTrixApplication
     private val mediaRepository = MediaRepository(app.settings)
     private val downloadRepository = DownloadRepository(application)
-    private val settings: SettingsStore = app.settings
 
     private val _state = MutableStateFlow(HomeUiState())
     val state = _state.asStateFlow()
@@ -181,8 +179,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 )
             }
 
-            val cookie = runCatching { settings.current().instagramCookie }.getOrDefault("")
-            downloadRepository.download(media, variant, cookie.ifBlank { null }).collect { downloadState ->
+            downloadRepository.download(media, variant).collect { downloadState ->
                 when (downloadState) {
                     is DownloadRepository.State.Running -> _state.update {
                         it.copy(downloadProgress = downloadState.progress)

@@ -25,7 +25,6 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -40,8 +39,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cleber.baixatrix.BaixaTrixApplication
@@ -62,8 +59,6 @@ fun SettingsScreen(onBack: () -> Unit) {
     )
 
     var resolverUrl by remember(saved.resolverUrl) { mutableStateOf(saved.resolverUrl) }
-    var cookie by remember(saved.instagramCookie) { mutableStateOf(saved.instagramCookie) }
-    var showCookie by remember { mutableStateOf(false) }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -114,44 +109,11 @@ fun SettingsScreen(onBack: () -> Unit) {
                 )
             }
 
-            SettingsCard(
-                title = "Instagram",
-                description = "Opcional. Se o Instagram pedir login ao analisar um link, cole aqui o " +
-                    "valor do cookie sessionid da sua conta."
-            ) {
-                OutlinedTextField(
-                    value = cookie,
-                    onValueChange = { cookie = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Cookie sessionid") },
-                    singleLine = true,
-                    shape = RoundedCornerShape(16.dp),
-                    visualTransformation = if (showCookie) {
-                        VisualTransformation.None
-                    } else {
-                        PasswordVisualTransformation()
-                    },
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Password,
-                        imeAction = ImeAction.Done
-                    )
-                )
-                TextButton(onClick = { showCookie = !showCookie }) {
-                    Text(if (showCookie) "Ocultar cookie" else "Mostrar cookie")
-                }
-                Text(
-                    text = "Use somente com uma conta sua. O cookie fica salvo apenas neste aparelho.",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
             GradientButton(
                 text = "Salvar ajustes",
                 onClick = {
                     scope.launch {
                         app.settings.setResolverUrl(resolverUrl)
-                        app.settings.setInstagramCookie(cookie)
                         snackbarHostState.showSnackbar("Ajustes salvos.")
                     }
                 }

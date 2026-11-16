@@ -55,20 +55,16 @@ data class ResolvedMedia(
         get() = aspectRatio < 1f
 
     /** Cabeçalhos necessários para o CDN entregar o arquivo (player e download). */
-    fun requestHeaders(cookie: String? = null): Map<String, String> {
+    fun requestHeaders(): Map<String, String> {
         val referer = when (platform) {
             Platform.INSTAGRAM -> "https://www.instagram.com/"
             Platform.KWAI -> "https://www.kwai.com/"
             Platform.OTHER -> sourceUrl
         }
-        val headers = mutableMapOf(
+        return mapOf(
             "Referer" to referer,
             "User-Agent" to com.cleber.baixatrix.net.Http.DESKTOP_UA
         )
-        if (platform == Platform.INSTAGRAM && !cookie.isNullOrBlank()) {
-            headers["Cookie"] = cookie
-        }
-        return headers
     }
 }
 

@@ -15,12 +15,11 @@ import java.io.IOException
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "baixatrix_settings")
 
-/** Preferências do app: servidor de extração opcional e cookie do Instagram. */
+/** Preferências do app: endereço do servidor de extração opcional. */
 class SettingsStore(private val context: Context) {
 
     data class Settings(
-        val resolverUrl: String = "",
-        val instagramCookie: String = ""
+        val resolverUrl: String = ""
     )
 
     val settings: Flow<Settings> = context.dataStore.data
@@ -29,8 +28,7 @@ class SettingsStore(private val context: Context) {
         }
         .map { prefs ->
             Settings(
-                resolverUrl = prefs[Keys.RESOLVER_URL].orEmpty(),
-                instagramCookie = prefs[Keys.INSTAGRAM_COOKIE].orEmpty()
+                resolverUrl = prefs[Keys.RESOLVER_URL].orEmpty()
             )
         }
 
@@ -40,12 +38,7 @@ class SettingsStore(private val context: Context) {
         context.dataStore.edit { it[Keys.RESOLVER_URL] = value.trim() }
     }
 
-    suspend fun setInstagramCookie(value: String) {
-        context.dataStore.edit { it[Keys.INSTAGRAM_COOKIE] = value.trim() }
-    }
-
     private object Keys {
         val RESOLVER_URL = stringPreferencesKey("resolver_url")
-        val INSTAGRAM_COOKIE = stringPreferencesKey("instagram_cookie")
     }
 }
