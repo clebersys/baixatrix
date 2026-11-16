@@ -1,8 +1,8 @@
-# Servidor de extração do BaixaTrix
+# Backend independente de desenvolvimento
 
-O app resolve Instagram e Kwai sozinho na maioria dos casos. Este servidor é a
-alternativa para quando o Instagram exige login: ele usa `yt-dlp` (com os seus
-cookies, se você fornecer) e devolve o link direto do arquivo de vídeo.
+Este backend FastAPI + `yt-dlp` é uma ferramenta independente para testes e
+desenvolvimento. **Ele não está integrado ao aplicativo BaixaTrix 2.0**: o app
+não tem opção para configurar um servidor nem envia links para este serviço.
 
 ## Rodando com Docker
 
@@ -22,16 +22,6 @@ pip install -r requirements.txt
 uvicorn app:app --host 0.0.0.0 --port 8000
 ```
 
-## Configurando no app
-
-1. Abra o **BaixaTrix** → **Ajustes**.
-2. Em *Servidor de extração*, coloque `http://SEU_IP:8000/resolve`.
-3. Salve. A partir daí, se a extração local falhar, o app usa o servidor.
-
-Em redes móveis o celular não enxerga o IP da sua LAN. Para usar fora de casa,
-publique o serviço com um túnel (Cloudflare Tunnel, Tailscale, ngrok) e use a
-URL pública com HTTPS.
-
 ## Cookies (Instagram)
 
 O Instagram bloqueia boa parte dos vídeos para quem não está logado. Para o
@@ -46,7 +36,8 @@ servidor resolver com uma conta sua:
 Cookies podem permitir que o `yt-dlp` acesse conteúdo que a conta consegue ver,
 inclusive posts privados. Isso é comportamento do backend externo, não suporte
 nativo do BaixaTrix. Use somente conteúdo seu ou autorizado; mantenha o servidor
-privado e nunca compartilhe o arquivo de cookies.
+privado e nunca compartilhe o arquivo de cookies. Esta integração não está
+disponível na interface do aplicativo.
 
 ## API
 

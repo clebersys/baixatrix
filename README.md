@@ -36,7 +36,7 @@ qualidade original, sem marca d'água adicional.
   abrir, compartilhar e excluir.
 - **Compartilhar para o app**: recebe links enviados de outros aplicativos
   (Instagram → Compartilhar → BaixaTrix).
-- **Ajustes**: endereço de um servidor de extração próprio, opcional.
+- **Sobre**: pasta de downloads, orientações de uso e versão do aplicativo.
 - Tema claro/escuro, Material 3 e nada de anúncios ou rastreamento.
 
 Os arquivos ficam em **`Filmes/BaixaTrix`** e aparecem na galeria.
@@ -57,14 +57,9 @@ O app resolve tudo no próprio aparelho, sem depender de serviços de terceiros:
 - **Posts privados não são suportados pelo BaixaTrix.** O app não solicita,
   aceita nem importa cookies ou `sessionid` do Instagram.
 - Alguns posts **públicos** podem não ser resolvidos se o Instagram exigir login.
-- O servidor opcional em [`backend/`](backend/) é um serviço separado. Se você
-  configurá-lo com cookies próprios, ele poderá acessar conteúdo que essa conta
-  consegue ver, inclusive posts privados. Isso é comportamento do backend
-  externo, não suporte nativo do BaixaTrix. Use somente conteúdo seu ou para o
-  qual tenha autorização.
 - Instagram e Kwai mudam o layout com frequência. Os extratores foram testados
   em novembro de 2026; se pararem de funcionar, a atualização é pontual nos
-  arquivos `data/resolver/*.kt` (ou use o backend, que se atualiza via `yt-dlp`).
+  arquivos `data/resolver/*.kt`.
 
 ## Requisitos
 
@@ -118,33 +113,22 @@ keyPassword=...
 O arquivo `keystore.properties` e a pasta `keystore/` estão no `.gitignore`.
 **Guarde a senha e o `.jks`**: sem eles não é possível publicar atualizações.
 
-## Servidor de extração (opcional)
-
-```bash
-cd backend
-docker compose up -d --build
-```
-
-Depois, em *Ajustes* do app, informe `http://SEU_IP:8000/resolve`. Detalhes,
-cookies e publicação fora da rede local em [`backend/README.md`](backend/README.md).
-
 ## Estrutura
 
 ```
 app/src/main/java/com/cleber/baixatrix/
 ├── MainActivity.kt                 # entrada, edge-to-edge, link compartilhado
-├── BaixaTrixApplication.kt        # DataStore + Coil (miniaturas de vídeo)
+├── BaixaTrixApplication.kt        # Coil (miniaturas de vídeo)
 ├── data/
-│   ├── MediaRepository.kt          # orquestra extratores nativos e o backend
+│   ├── MediaRepository.kt          # orquestra os extratores locais
 │   ├── DownloadRepository.kt       # DownloadManager + progresso
 │   ├── LibraryRepository.kt        # MediaStore (Meus vídeos)
-│   ├── SettingsStore.kt            # DataStore
 │   ├── model/ResolvedMedia.kt      # mídia resolvida + variantes
-│   └── resolver/                   # Instagram, Kwai e servidor remoto
+│   └── resolver/                   # Instagram e Kwai
 ├── net/Http.kt                     # OkHttp compartilhado
 ├── ui/                             # Compose: Home, Biblioteca, Ajustes
 └── util/                           # links, HTML/JSON, formatação, intents
-backend/                            # FastAPI + yt-dlp (opcional)
+backend/                            # utilitário independente de desenvolvimento, não integrado ao app
 ```
 
 ## Publicação
@@ -165,9 +149,10 @@ A política de privacidade é publicada pelo GitHub Pages em
 
 ## Privacidade e uso responsável
 
-O app não envia seus links para nenhum servidor por padrão: Instagram e Kwai são
-acessados diretamente do seu aparelho. Se você configurar um servidor de
-extração, os links passam a ser enviados para ele.
+O app não tem configuração de servidor de extração e não envia seus links a
+servidores do desenvolvedor: Instagram e Kwai são acessados diretamente do
+aparelho. A pasta `backend/` é uma ferramenta independente para desenvolvedores
+e não é usada pelo aplicativo.
 
 Baixe apenas vídeos seus ou que você tenha autorização para usar. Respeite os
 direitos autorais e os Termos de Uso das plataformas.

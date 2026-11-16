@@ -166,7 +166,7 @@ fun HomeScreen(
                     IconButton(onClick = onOpenSettings) {
                         Icon(
                             imageVector = Icons.Filled.Settings,
-                            contentDescription = "Ajustes",
+                            contentDescription = "Sobre",
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
@@ -201,8 +201,7 @@ fun HomeScreen(
             state.error?.let { message ->
                 ErrorCard(
                     message = message,
-                    details = state.errorDetails,
-                    onOpenSettings = onOpenSettings
+                    details = state.errorDetails
                 )
             }
 
@@ -381,7 +380,7 @@ private fun ResolvingCard() {
 }
 
 @Composable
-private fun ErrorCard(message: String, details: String?, onOpenSettings: () -> Unit) {
+private fun ErrorCard(message: String, details: String?) {
     var expanded by remember(message) { mutableStateOf(false) }
 
     Surface(
@@ -429,14 +428,6 @@ private fun ErrorCard(message: String, details: String?, onOpenSettings: () -> U
                 ) {
                     Text(if (expanded) "Ocultar detalhes" else "Ver detalhes técnicos")
                 }
-            }
-            TextButton(
-                onClick = onOpenSettings,
-                colors = ButtonDefaults.textButtonColors(
-                    contentColor = MaterialTheme.colorScheme.onErrorContainer
-                )
-            ) {
-                Text("Abrir ajustes de extração")
             }
         }
     }

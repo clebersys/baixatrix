@@ -8,10 +8,8 @@ O BaixaTrix não coleta, não armazena e não compartilha dados pessoais.
   diretamente Instagram ou Kwai. Nenhum link é enviado a servidores do
   desenvolvedor.
 - **Cookies do Instagram**: o BaixaTrix não solicita, lê, armazena nem importa
-  cookies ou sessões do app Instagram. Um servidor de extração opcional é
-  externo e pode ter suas próprias credenciais, sob sua responsabilidade.
-- **Servidor de extração** (opcional): se você configurar um endereço próprio,
-  os links analisados serão enviados a esse servidor, sob sua responsabilidade.
+  cookies ou sessões do app Instagram. O aplicativo não possui configuração de
+  servidor de extração.
 - **Vídeos baixados**: são gravados na pasta pública `Filmes/BaixaTrix` do
   aparelho.
 - **Sem anúncios, sem analytics, sem rastreamento.** O app não pede login,

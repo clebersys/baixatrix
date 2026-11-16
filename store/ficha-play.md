@@ -53,7 +53,7 @@ PRIVACIDADE
 Nenhum cadastro, nenhum anúncio, nenhum rastreamento. Os links são resolvidos no próprio aparelho e os vídeos ficam só na sua memória. O BaixaTrix não solicita nem armazena cookies ou sessões do Instagram.
 
 CONTEÚDO PRIVADO E LOGIN
-O BaixaTrix não oferece suporte a downloads de posts privados e não solicita, aceita ou importa cookies/sessionid do Instagram. Alguns posts públicos podem não ser resolvidos se o Instagram exigir login. Um backend próprio é um serviço externo; se configurado com cookies, poderá acessar conteúdo que essa conta consiga ver, inclusive posts privados.
+O BaixaTrix não oferece suporte a downloads de posts privados e não solicita, aceita ou importa cookies/sessionid do Instagram. Alguns posts públicos podem não ser resolvidos se o Instagram exigir login. O aplicativo não oferece configuração de servidor de extração.
 
 USO RESPONSÁVEL
 Baixe apenas vídeos seus ou que você tenha autorização para usar. Respeite direitos autorais e os Termos de Uso do Instagram e do Kwai. O BaixaTrix não é afiliado a essas plataformas.
@@ -84,8 +84,8 @@ Requisitos: Android 8.0 ou superior.
 - Dados criptografados em trânsito: sim (HTTPS com Instagram/Kwai)
 - Usuário pode solicitar exclusão: sim (apagar a pasta e desinstalar)
 - Sem anúncios, sem SDKs de analytics
-- Observação: se o usuário configurar um servidor de extração próprio, os
-  links vão para esse servidor — informe isso no campo de observações.
+- Links são resolvidos no próprio aparelho; o app não disponibiliza campo para
+  enviar links a um servidor externo.
 
 ## Público-alvo
 

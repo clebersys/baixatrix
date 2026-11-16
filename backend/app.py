@@ -1,9 +1,9 @@
 """
-Servidor de extração opcional do BaixaTrix.
+Backend independente de desenvolvimento para testes com yt-dlp.
 
-O app tenta extrair o vídeo sozinho (Instagram e Kwai). Quando o Instagram
-passa a exigir login, este servidor resolve o link com yt-dlp — inclusive
-usando cookies de uma conta sua — e devolve o arquivo direto para o celular.
+Este serviço não está conectado ao aplicativo BaixaTrix 2.0. Ele pode ser
+executado separadamente por desenvolvedores e devolve um link de vídeo para
+clientes próprios que integrem a API.
 
 Uso:
     GET /resolve?url=https://www.instagram.com/reel/XXXX/

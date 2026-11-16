@@ -68,8 +68,7 @@ class InstagramResolver : PlatformResolver {
         if (ordered.isEmpty()) {
             throw ResolveException(
                 message = "O Instagram não disponibilizou este vídeo público. " +
-                    "Posts privados ou removidos não são suportados pelo BaixaTrix. " +
-                    "Você pode configurar um servidor de extração próprio para conteúdo autorizado.",
+                    "O BaixaTrix só oferece suporte a posts públicos; posts privados ou removidos não são suportados.",
                 details = errors.filter { it.isNotBlank() }.distinct().joinToString(" | ")
                     .takeIf { it.isNotBlank() }
             )
