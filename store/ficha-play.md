@@ -1,4 +1,4 @@
-# Ficha da Play Store — BaixaTrix 2.1.0
+# Ficha da Play Store — BaixaTrix 2.2.0
 
 Arquivos de mídia em `store/`:
 
@@ -13,7 +13,7 @@ Arquivos de mídia em `store/`:
 | `capturas/05-compartilhar-lote.jpg` | Compartilhamento das partes em lote |
 
 Artefato de upload: `app/build/outputs/bundle/release/app-release.aab`
-(ou `dist/BaixaTrix-2.1.0.aab` — o AAB é assinado com a mesma keystore do APK).
+(ou `dist/BaixaTrix-2.2.0.aab` — o AAB é assinado com a mesma keystore do APK).
 
 ---
 
@@ -26,16 +26,16 @@ BaixaTrix — Instagram e Kwai
 ## Descrição curta (máx. 80)
 
 ```
-Salve vídeos do Instagram e do Kwai com prévia antes de baixar.
+Salve vídeos do Instagram, Kwai e Kwai Lite com prévia.
 ```
 
 ## Descrição completa (máx. 4000)
 
 ```
-BaixaTrix é o jeito mais direto de guardar aquele vídeo do Instagram ou do Kwai: cole o link, assista à prévia no player e só então baixe — em qualidade original e sem marca d'água adicional.
+BaixaTrix é o jeito mais direto de guardar aquele vídeo público do Instagram ou do Kwai/Kwai Lite: cole o link, assista à prévia no player e só então baixe — em qualidade original e sem marca d'água adicional.
 
 COMO FUNCIONA
-1. Copie o link do vídeo no Instagram ou no Kwai.
+1. Copie o link do vídeo no Instagram, Kwai ou Kwai Lite.
 2. Abra o BaixaTrix: o link é detectado automaticamente (ou toque em Colar).
 3. Veja a prévia no player, confira autor, duração e qualidade.
 4. Toque em Baixar vídeo. Pronto: o arquivo vai para Filmes/BaixaTrix.
@@ -45,7 +45,7 @@ DESTAQUES
 • Download em segundo plano: continua mesmo se você fechar o app, com notificação de progresso e retomada automática.
 • Baixar e dividir em partes de 30s sem reencodificar; compartilhe todas as partes de uma vez ou envie ao WhatsApp como documentos.
 • Meus vídeos: biblioteca com miniaturas, tamanho e data, para abrir, compartilhar ou excluir.
-• Recebe links de outros apps: no Instagram, toque em Compartilhar → BaixaTrix.
+• Recebe links de outros apps: no Instagram, Kwai ou Kwai Lite, toque em Compartilhar → BaixaTrix.
 • Seletor de qualidade quando o site oferece mais de uma versão.
 • Tema claro e escuro, Material 3, em português.
 
@@ -56,7 +56,7 @@ CONTEÚDO PRIVADO E LOGIN
 O BaixaTrix não oferece suporte a downloads de posts privados e não solicita, aceita ou importa cookies/sessionid do Instagram. Alguns posts públicos podem não ser resolvidos se o Instagram exigir login. O aplicativo não oferece configuração de servidor de extração.
 
 USO RESPONSÁVEL
-Baixe apenas vídeos seus ou que você tenha autorização para usar. Respeite direitos autorais e os Termos de Uso do Instagram e do Kwai. O BaixaTrix não é afiliado a essas plataformas.
+Baixe apenas vídeos seus ou que você tenha autorização para usar. Respeite direitos autorais e os Termos de Uso do Instagram e do Kwai/Kwai Lite. O BaixaTrix não é afiliado a essas plataformas.
 
 Requisitos: Android 8.0 ou superior.
 ```
@@ -64,7 +64,7 @@ Requisitos: Android 8.0 ou superior.
 ## Categoria e tags
 
 - Categoria: **Ferramentas** (Tools)
-- Tags: download de vídeo, Instagram, Kwai, player
+- Tags: download de vídeo, Instagram, Kwai, Kwai Lite, player
 - E-mail de contato: clebersys@users.noreply.github.com
 - Site: https://github.com/clebersys/baixatrix
 - Política de privacidade: https://clebersys.github.io/baixatrix/privacidade.html
@@ -81,7 +81,7 @@ Requisitos: Android 8.0 ou superior.
 ## Segurança dos dados (Data safety)
 
 - Coleta ou compartilha dados? **Não**
-- Dados criptografados em trânsito: sim (HTTPS com Instagram/Kwai)
+- Dados criptografados em trânsito: sim (HTTPS com Instagram, Kwai e Kwai Lite)
 - Usuário pode solicitar exclusão: sim (apagar a pasta e desinstalar)
 - Sem anúncios, sem SDKs de analytics
 - Links são resolvidos no próprio aparelho; o app não disponibiliza campo para
@@ -95,7 +95,7 @@ Requisitos: Android 8.0 ou superior.
 ## Novidades desta versão (release notes)
 
 ```
-• Ajustes simplificados: removida a configuração avançada de servidor de extração.
-• BaixaTrix usa apenas os extratores locais para Instagram e Kwai.
-• Nenhuma opção para inserir ou armazenar cookies/sessionid do Instagram.
+• Links compartilhados do Kwai Lite são reconhecidos pelo BaixaTrix.
+• A prévia, download, divisão em 30s e compartilhamento em lote continuam iguais.
+• O processamento continua local, sem servidor configurável nem cookies do Instagram.
 ```

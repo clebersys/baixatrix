@@ -280,7 +280,7 @@ private fun Hero() {
             )
         )
         Text(
-            text = "Cole o link do Instagram ou do Kwai, assista à prévia e baixe em um toque.",
+            text = "Cole um link do Instagram ou Kwai (incluindo Kwai Lite), veja a prévia e baixe.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -345,7 +345,7 @@ private fun LinkCard(
                 icon = painterResource(R.drawable.ic_link)
             )
             Text(
-                text = "Posts e Reels públicos do Instagram e vídeos do Kwai.",
+                text = "Posts públicos do Instagram e vídeos do Kwai e Kwai Lite.",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

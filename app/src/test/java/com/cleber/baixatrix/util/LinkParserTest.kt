@@ -43,6 +43,25 @@ class LinkParserTest {
     }
 
     @Test
+    fun `extrai link compartilhado do Kwai Lite com frase antes`() {
+        val text = "Esse clipe me faz querer assistir novamente! https://kwai-video.com/p/0Cy4wPFd"
+
+        val url = LinkParser.firstUrl(text)
+
+        assertEquals("https://kwai-video.com/p/0Cy4wPFd", url)
+        assertEquals(Platform.KWAI, LinkParser.platform(url.orEmpty()))
+        assertTrue(LinkParser.supports(text))
+    }
+
+    @Test
+    fun `nao confunde dominio parecido com Kwai Lite`() {
+        assertEquals(
+            Platform.OTHER,
+            LinkParser.platform("https://not-kwai-video.com/p/0Cy4wPFd")
+        )
+    }
+
+    @Test
     fun `link de outro site nao e suportado`() {
         val url = "https://www.youtube.com/watch?v=abc"
         assertEquals(Platform.OTHER, LinkParser.platform(url))

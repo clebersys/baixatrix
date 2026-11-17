@@ -18,7 +18,7 @@ class MediaRepository {
             Platform.INSTAGRAM -> InstagramResolver().resolve(link)
             Platform.KWAI -> KwaiResolver().resolve(link)
             Platform.OTHER -> throw ResolveException(
-                "O BaixaTrix aceita links do Instagram e do Kwai."
+                "Este link não é do Instagram nem do Kwai."
             )
         }
     }

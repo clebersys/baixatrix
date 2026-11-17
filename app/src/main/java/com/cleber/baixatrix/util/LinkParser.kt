@@ -1,5 +1,7 @@
 package com.cleber.baixatrix.util
 
+import java.net.URI
+
 /** Plataformas suportadas nativamente pelo app. */
 enum class Platform(val label: String) {
     INSTAGRAM("Instagram"),
@@ -10,7 +12,7 @@ enum class Platform(val label: String) {
 /**
  * Utilitários para reconhecer e normalizar os links colados pelo usuário.
  * Aceita links completos (com parâmetros de rastreio) e textos que contenham
- * um link no meio, como o texto compartilhado pelo Instagram ou Kwai.
+ * um link no meio, como os textos compartilhados pelo Instagram, Kwai ou Kwai Lite.
  */
 object LinkParser {
 
@@ -26,10 +28,7 @@ object LinkParser {
         RegexOption.IGNORE_CASE
     )
 
-    private val kwaiRegex = Regex(
-        """(?:kwai\.com|kwai\.app|kwai\.video|k\.kwai)""",
-        RegexOption.IGNORE_CASE
-    )
+    private val kwaiDomains = setOf("kwai.com", "kwai.app", "kwai.video", "kwai-video.com")
 
     /** Extrai o primeiro link http(s) de um texto livre. */
     fun firstUrl(text: String): String? {
@@ -38,12 +37,28 @@ object LinkParser {
     }
 
     fun platform(url: String): Platform = when {
-        instagramRegex.containsMatchIn(url) -> Platform.INSTAGRAM
-        kwaiRegex.containsMatchIn(url) -> Platform.KWAI
+        isInstagramUrl(url) -> Platform.INSTAGRAM
+        isKwaiUrl(url) -> Platform.KWAI
         else -> Platform.OTHER
     }
 
-    /** Retorna true quando o texto contém um link do Instagram ou Kwai. */
+    private fun isInstagramUrl(url: String): Boolean {
+        val host = host(url) ?: return false
+        val isInstagramHost = hostMatches(host, "instagram.com") || hostMatches(host, "instagr.am")
+        return isInstagramHost && instagramRegex.containsMatchIn(url)
+    }
+
+    private fun isKwaiUrl(url: String): Boolean {
+        val host = host(url) ?: return false
+        return host == "k.kwai" || kwaiDomains.any { domain -> hostMatches(host, domain) }
+    }
+
+    private fun host(url: String): String? = runCatching { URI(url).host?.lowercase() }.getOrNull()
+
+    private fun hostMatches(host: String, domain: String): Boolean =
+        host == domain || host.endsWith(".$domain")
+
+    /** Retorna true quando o texto contém link de uma plataforma suportada. */
     fun supports(text: String): Boolean {
         val url = firstUrl(text) ?: return false
         return platform(url) != Platform.OTHER

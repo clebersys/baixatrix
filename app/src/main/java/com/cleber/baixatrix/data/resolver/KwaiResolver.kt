@@ -11,8 +11,8 @@ import com.cleber.baixatrix.util.Platform
 /**
  * Extrator do Kwai.
  *
- * O link curto (k.kwai.com) é resolvido seguindo os redirecionamentos até a
- * página do vídeo. A página entrega o arquivo dentro de blocos JSON
+ * Links curtos do Kwai e do Kwai Lite são resolvidos seguindo redirecionamentos
+ * até a página do vídeo. A página entrega o arquivo dentro de blocos JSON
  * (photoUrl / mainMvUrls / manifest) e também em tags <video>.
  */
 class KwaiResolver : PlatformResolver {

@@ -5,7 +5,7 @@
 O BaixaTrix não coleta, não armazena e não compartilha dados pessoais.
 
 - **Links de vídeo**: são processados no próprio aparelho, acessando
-  diretamente Instagram ou Kwai. Nenhum link é enviado a servidores do
+  diretamente Instagram, Kwai ou Kwai Lite. Nenhum link é enviado a servidores do
   desenvolvedor.
 - **Cookies do Instagram**: o BaixaTrix não solicita, lê, armazena nem importa
   cookies ou sessões do app Instagram. O aplicativo não possui configuração de
