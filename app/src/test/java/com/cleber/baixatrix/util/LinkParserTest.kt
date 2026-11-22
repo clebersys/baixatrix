@@ -62,10 +62,34 @@ class LinkParserTest {
     }
 
     @Test
-    fun `link de outro site nao e suportado`() {
-        val url = "https://www.youtube.com/watch?v=abc"
-        assertEquals(Platform.OTHER, LinkParser.platform(url))
-        assertFalse(LinkParser.supports(url))
+    fun `reconhece links de video e shorts do youtube`() {
+        val urls = listOf(
+            "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+            "https://m.youtube.com/shorts/dQw4w9WgXcQ",
+            "https://music.youtube.com/watch?v=dQw4w9WgXcQ",
+            "https://youtu.be/dQw4w9WgXcQ"
+        )
+
+        urls.forEach { url ->
+            assertEquals(Platform.YOUTUBE, LinkParser.platform(url))
+            assertTrue(LinkParser.supports(url))
+        }
+    }
+
+    @Test
+    fun `rejeita dominio parecido e links youtube sem video`() {
+        val urls = listOf(
+            "https://youtube.com.example.org/watch?v=dQw4w9WgXcQ",
+            "https://youtube.com@evil.example/watch?v=dQw4w9WgXcQ",
+            "http://www.youtube.com/watch?v=dQw4w9WgXcQ",
+            "https://www.youtube.com/playlist?list=PL1234567890",
+            "https://www.youtube.com/watch?v=curto"
+        )
+
+        urls.forEach { url ->
+            assertEquals(Platform.OTHER, LinkParser.platform(url))
+            assertFalse(LinkParser.supports(url))
+        }
     }
 
     @Test

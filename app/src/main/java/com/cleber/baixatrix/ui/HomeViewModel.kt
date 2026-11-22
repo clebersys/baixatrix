@@ -6,6 +6,7 @@ import android.os.Environment
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.cleber.baixatrix.data.DownloadRepository
+import com.cleber.baixatrix.data.BackendSettingsRepository
 import com.cleber.baixatrix.data.MediaRepository
 import com.cleber.baixatrix.data.model.ResolveException
 import com.cleber.baixatrix.data.model.ResolvedMedia
@@ -48,7 +49,7 @@ data class HomeUiState(
 
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val mediaRepository = MediaRepository()
+    private val mediaRepository = MediaRepository(BackendSettingsRepository(application))
     private val downloadRepository = DownloadRepository(application)
 
     private val _state = MutableStateFlow(HomeUiState())

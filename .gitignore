@@ -11,3 +11,6 @@ app/build/
 /dist/
 /keystore/
 /keystore.properties
+/backend/.env
+__pycache__/
+*.py[cod]

@@ -3,10 +3,9 @@ services:
     build: .
     restart: unless-stopped
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     environment:
-      # Deixe vazio para desativar a exigência de chave.
-      API_KEY: ""
+      API_KEY: ${API_KEY:?Defina API_KEY em backend/.env}
       # Opcional: arquivo de cookies exportado do navegador (formato Netscape).
       YTDLP_COOKIES: /data/cookies.txt
     volumes:

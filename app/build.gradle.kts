@@ -21,8 +21,8 @@ android {
         applicationId = "com.cleber.baixatrix"
         minSdk = 26
         targetSdk = 36
-        versionCode = 8
-        versionName = "2.2.0"
+        versionCode = 9
+        versionName = "2.3.0"
     }
 
     androidResources {

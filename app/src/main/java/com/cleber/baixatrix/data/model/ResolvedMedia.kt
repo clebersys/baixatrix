@@ -59,6 +59,7 @@ data class ResolvedMedia(
         val referer = when (platform) {
             Platform.INSTAGRAM -> "https://www.instagram.com/"
             Platform.KWAI -> "https://www.kwai.com/"
+            Platform.YOUTUBE -> sourceUrl
             Platform.OTHER -> sourceUrl
         }
         return mapOf(

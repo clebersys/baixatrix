@@ -2,17 +2,19 @@ package com.cleber.baixatrix.util
 
 import java.net.URI
 
-/** Plataformas suportadas nativamente pelo app. */
+/** Plataformas suportadas pelo app. */
 enum class Platform(val label: String) {
     INSTAGRAM("Instagram"),
     KWAI("Kwai"),
+    YOUTUBE("YouTube"),
     OTHER("Link")
 }
 
 /**
  * Utilitários para reconhecer e normalizar os links colados pelo usuário.
  * Aceita links completos (com parâmetros de rastreio) e textos que contenham
- * um link no meio, como os textos compartilhados pelo Instagram, Kwai ou Kwai Lite.
+ * um link no meio, como os textos compartilhados pelo Instagram, Kwai, Kwai Lite
+ * ou YouTube.
  */
 object LinkParser {
 
@@ -29,6 +31,11 @@ object LinkParser {
     )
 
     private val kwaiDomains = setOf("kwai.com", "kwai.app", "kwai.video", "kwai-video.com")
+    private val youtubeHosts = setOf(
+        "youtube.com", "www.youtube.com", "m.youtube.com", "music.youtube.com", "youtu.be"
+    )
+    private val youtubeVideoIdRegex = Regex("^[A-Za-z0-9_-]{11}$")
+    private val youtubeWatchIdRegex = Regex("(?:^|&)v=([A-Za-z0-9_-]{11})(?:&|$)")
 
     /** Extrai o primeiro link http(s) de um texto livre. */
     fun firstUrl(text: String): String? {
@@ -37,9 +44,28 @@ object LinkParser {
     }
 
     fun platform(url: String): Platform = when {
+        isYoutubeUrl(url) -> Platform.YOUTUBE
         isInstagramUrl(url) -> Platform.INSTAGRAM
         isKwaiUrl(url) -> Platform.KWAI
         else -> Platform.OTHER
+    }
+
+    private fun isYoutubeUrl(url: String): Boolean {
+        val uri = runCatching { URI(url) }.getOrNull() ?: return false
+        val host = uri.host?.lowercase() ?: return false
+        if (uri.scheme?.lowercase() != "https" || host !in youtubeHosts) return false
+        if (uri.userInfo != null || uri.port !in setOf(-1, 443)) return false
+
+        val segments = uri.path.orEmpty().split('/').filter(String::isNotEmpty)
+        val videoId = when {
+            host == "youtu.be" -> segments.firstOrNull()
+            uri.path == "/watch" -> youtubeWatchIdRegex.find(uri.rawQuery.orEmpty())
+                ?.groupValues?.getOrNull(1)
+            segments.size >= 2 && segments.first() in setOf("shorts", "live", "embed") ->
+                segments[1]
+            else -> null
+        }
+        return youtubeVideoIdRegex.matches(videoId.orEmpty())
     }
 
     private fun isInstagramUrl(url: String): Boolean {

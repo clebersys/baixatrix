@@ -166,7 +166,7 @@ fun HomeScreen(
                     IconButton(onClick = onOpenSettings) {
                         Icon(
                             imageVector = Icons.Filled.Settings,
-                            contentDescription = "Sobre",
+                            contentDescription = "Configurações",
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
@@ -280,7 +280,7 @@ private fun Hero() {
             )
         )
         Text(
-            text = "Cole um link do Instagram ou Kwai (incluindo Kwai Lite), veja a prévia e baixe.",
+            text = "Cole um link do Instagram, Kwai ou YouTube, veja a prévia e baixe.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -313,7 +313,7 @@ private fun LinkCard(
                 value = url,
                 onValueChange = onUrlChange,
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("https://www.instagram.com/reel/...") },
+                placeholder = { Text("https://www.youtube.com/watch?v=...") },
                 leadingIcon = {
                     Icon(
                         painter = painterResource(R.drawable.ic_link),
@@ -345,7 +345,7 @@ private fun LinkCard(
                 icon = painterResource(R.drawable.ic_link)
             )
             Text(
-                text = "Posts públicos do Instagram e vídeos do Kwai e Kwai Lite.",
+                text = "Instagram e Kwai são processados no aparelho; YouTube usa o backend configurado em Configurações.",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

@@ -1,9 +1,8 @@
 """
-Backend independente de desenvolvimento para testes com yt-dlp.
+Backend pessoal do BaixaTrix para resolver links permitidos com yt-dlp.
 
-Este serviço não está conectado ao aplicativo BaixaTrix 2.0. Ele pode ser
-executado separadamente por desenvolvedores e devolve um link de vídeo para
-clientes próprios que integrem a API.
+O app pode enviar links do YouTube a este serviço configurado pelo usuário. O
+endpoint também preserva os resolvedores existentes para Instagram e Kwai.
 
 Uso:
     GET /resolve?url=https://www.instagram.com/reel/XXXX/
@@ -21,7 +20,9 @@ Resposta:
 """
 
 import os
+import re
 from typing import Any
+from urllib.parse import parse_qs, urlsplit
 
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.responses import JSONResponse
@@ -33,17 +34,76 @@ COOKIES_FILE = os.environ.get("YTDLP_COOKIES", "")
 API_KEY = os.environ.get("API_KEY", "")
 
 
-def ydl_options() -> dict[str, Any]:
+YOUTUBE_HOSTS = {
+    "youtube.com",
+    "www.youtube.com",
+    "m.youtube.com",
+    "music.youtube.com",
+    "youtu.be",
+}
+INSTAGRAM_HOSTS = {"instagram.com", "www.instagram.com", "instagr.am"}
+KWAI_HOSTS = {
+    "kwai.com",
+    "www.kwai.com",
+    "k.kwai.com",
+    "kwai.app",
+    "kwai.video",
+    "kwai-video.com",
+}
+
+
+def validate_source_url(url: str) -> str:
+    """Allow only known video platform URLs before passing input to yt-dlp."""
+    if len(url) > 2048:
+        raise HTTPException(status_code=422, detail="Link inválido")
+
+    try:
+        parsed = urlsplit(url)
+        host = (parsed.hostname or "").lower().rstrip(".")
+        port = parsed.port
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail="Link inválido") from error
+
+    if (
+        parsed.scheme.lower() != "https"
+        or not host
+        or parsed.username is not None
+        or parsed.password is not None
+        or port not in (None, 443)
+    ):
+        raise HTTPException(status_code=422, detail="Link inválido")
+
+    if host in YOUTUBE_HOSTS:
+        path = parsed.path.rstrip("/")
+        segments = [segment for segment in path.split("/") if segment]
+        video_id = None
+        if path == "/watch":
+            video_id = (parse_qs(parsed.query).get("v") or [None])[0]
+        elif host == "youtu.be" and segments:
+            video_id = segments[0]
+        elif len(segments) >= 2 and segments[0] in {"shorts", "live", "embed"}:
+            video_id = segments[1]
+        if video_id and re.fullmatch(r"[A-Za-z0-9_-]{11}", video_id):
+            return "youtube"
+
+    if host in INSTAGRAM_HOSTS:
+        return "instagram"
+    if host in KWAI_HOSTS:
+        return "kwai"
+
+    raise HTTPException(status_code=422, detail="Plataforma de vídeo não suportada")
+
+
+def ydl_options(use_cookies: bool = True) -> dict[str, Any]:
     options: dict[str, Any] = {
         "quiet": True,
         "no_warnings": True,
         "noplaylist": True,
         "skip_download": True,
-        "nocheckcertificate": True,
         "socket_timeout": 25,
         "format": "bv*+ba/b",
     }
-    if COOKIES_FILE and os.path.exists(COOKIES_FILE):
+    if use_cookies and COOKIES_FILE and os.path.exists(COOKIES_FILE):
         options["cookiefile"] = COOKIES_FILE
     return options
 
@@ -88,13 +148,15 @@ def health() -> dict[str, str]:
 @app.get("/resolve")
 def resolve(
     request: Request,
-    url: str = Query(..., description="Link do vídeo"),
+    url: str = Query(..., min_length=1, max_length=2048, description="Link do vídeo"),
 ) -> JSONResponse:
     if API_KEY and request.headers.get("x-api-key") != API_KEY:
         raise HTTPException(status_code=401, detail="API key inválida")
 
+    source_platform = validate_source_url(url)
+
     try:
-        with YoutubeDL(ydl_options()) as ydl:
+        with YoutubeDL(ydl_options(use_cookies=source_platform != "youtube")) as ydl:
             info = ydl.extract_info(url, download=False)
     except Exception as error:  # noqa: BLE001 - repassamos a mensagem ao app
         return JSONResponse(
@@ -107,7 +169,7 @@ def resolve(
 
     variants = pick_variants(info)
     direct_url = info.get("url")
-    if not variants and direct_url:
+    if source_platform != "youtube" and not variants and direct_url:
         variants = [{"url": direct_url, "height": info.get("height")}]
 
     if not variants:
@@ -115,7 +177,7 @@ def resolve(
             status_code=422,
             content={
                 "status": "error",
-                "text": "Nenhum arquivo de vídeo encontrado (conteúdo privado ou removido).",
+                "text": "Nenhum formato MP4 progressivo com áudio e vídeo foi encontrado.",
             },
         )
 
@@ -128,6 +190,6 @@ def resolve(
             "author": info.get("uploader") or info.get("channel"),
             "thumbnail": info.get("thumbnail"),
             "duration": info.get("duration"),
-            "platform": info.get("extractor_key"),
+            "platform": source_platform,
         }
     )

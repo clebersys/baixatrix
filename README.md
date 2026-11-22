@@ -1,8 +1,9 @@
 # BaixaTrix
 
-Aplicativo Android para baixar vídeos do **Instagram** e do **Kwai** a partir de
-um link. Cole o link, veja a prévia do vídeo no player e só então baixe — em
-qualidade original, sem marca d'água adicional.
+Aplicativo Android para baixar vídeos do **Instagram**, **Kwai** e **YouTube** a
+partir de um link. Cole o link, veja a prévia do vídeo no player e só então
+baixe. YouTube requer um backend pessoal com `yt-dlp` configurado pelo usuário.
+Esse suporte é para uso pessoal fora da Play Store.
 
 <p align="center">
   <img src="docs/tela-inicial.png" width="240" alt="Tela inicial" />
@@ -25,7 +26,7 @@ qualidade original, sem marca d'água adicional.
 
 - **Colar link** com um toque (ou digitando) — aceita links de `instagram.com/p`,
   `/reel`, `/reels`, `/tv`, `kwai.com`, `k.kwai.com`, `kwai.app` e links do
-  Kwai Lite (`kwai-video.com/p/...`).
+  Kwai Lite (`kwai-video.com/p/...`), além de vídeos e Shorts do YouTube.
 - **Prévia antes de baixar** com player embutido (ExoPlayer), capa, autor,
   duração e seletor de qualidade quando o site oferece mais de uma.
 - **Download em segundo plano** pelo DownloadManager: continua se você sair do
@@ -46,18 +47,23 @@ compartilhadas; mantenha o BaixaTrix aberto enquanto o processamento termina.
 
 ## Como a extração funciona
 
-O app resolve tudo no próprio aparelho, sem depender de serviços de terceiros:
+Instagram e Kwai são resolvidos no próprio aparelho; YouTube usa o backend HTTPS
+pessoal configurado em Configurações:
 
 | Plataforma | Estratégia |
 |---|---|
 | **Kwai / Kwai Lite** | Os links do Kwai Lite redirecionam para o Kwai. A página entrega o MP4 no HTML (`<a-video-player src=…>`); o app pega o vídeo principal (ignorando recomendações) e usa capa/título do Open Graph. |
 | **Instagram** | Para posts públicos, o app tenta a página de *embed* (`/embed/captioned/`) e as tags Open Graph. O app não solicita, aceita nem lê cookies ou `sessionid` do Instagram. |
+| **YouTube** | O link é enviado ao backend HTTPS configurado pelo usuário, que usa `yt-dlp` e retorna formatos MP4 progressivos com áudio e vídeo juntos. A chave da API é opcional; o app não envia cookies do YouTube. |
 
 ### Limitações reais (leia antes de usar)
 
 - **Posts privados não são suportados pelo BaixaTrix.** O app não solicita,
   aceita nem importa cookies ou `sessionid` do Instagram.
 - Alguns posts **públicos** podem não ser resolvidos se o Instagram exigir login.
+- YouTube precisa de um backend próprio acessível por HTTPS. Só aparecem as
+  qualidades que o YouTube oferece em MP4 progressivo; o app não combina faixas
+  separadas nem acessa vídeos privados.
 - Instagram e Kwai mudam o layout com frequência. Os extratores foram testados
   em novembro de 2026; se pararem de funcionar, a atualização é pontual nos
   arquivos `data/resolver/*.kt`.
@@ -121,15 +127,16 @@ app/src/main/java/com/cleber/baixatrix/
 ├── MainActivity.kt                 # entrada, edge-to-edge, link compartilhado
 ├── BaixaTrixApplication.kt        # Coil (miniaturas de vídeo)
 ├── data/
-│   ├── MediaRepository.kt          # orquestra os extratores locais
+│   ├── MediaRepository.kt          # orquestra os resolvedores
+│   ├── BackendSettingsRepository.kt # URL/chave do backend pessoal
 │   ├── DownloadRepository.kt       # DownloadManager + progresso
 │   ├── LibraryRepository.kt        # MediaStore (Meus vídeos)
 │   ├── model/ResolvedMedia.kt      # mídia resolvida + variantes
-│   └── resolver/                   # Instagram e Kwai
+│   └── resolver/                   # Instagram, Kwai e YouTube
 ├── net/Http.kt                     # OkHttp compartilhado
 ├── ui/                             # Compose: Home, Biblioteca, Ajustes
 └── util/                           # links, HTML/JSON, formatação, intents
-backend/                            # utilitário independente de desenvolvimento, não integrado ao app
+backend/                            # FastAPI + yt-dlp para a resolução YouTube
 ```
 
 ## Publicação
@@ -150,10 +157,11 @@ A política de privacidade é publicada pelo GitHub Pages em
 
 ## Privacidade e uso responsável
 
-O app não tem configuração de servidor de extração e não envia seus links a
-servidores do desenvolvedor: Instagram e Kwai são acessados diretamente do
-aparelho. A pasta `backend/` é uma ferramenta independente para desenvolvedores
-e não é usada pelo aplicativo.
+Instagram e Kwai são acessados diretamente do aparelho. Para YouTube, o link é
+enviado somente ao backend HTTPS que o usuário configurar em **Configurações**; o app
+não usa servidores do desenvolvedor. O endereço e a chave opcional ficam nas
+preferências privadas do aplicativo. A pasta `backend/` contém o serviço para
+execução pelo próprio usuário.
 
 Baixe apenas vídeos seus ou que você tenha autorização para usar. Respeite os
 direitos autorais e os Termos de Uso das plataformas.
