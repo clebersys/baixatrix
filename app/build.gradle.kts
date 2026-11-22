@@ -21,8 +21,8 @@ android {
         applicationId = "com.cleber.baixatrix"
         minSdk = 26
         targetSdk = 36
-        versionCode = 9
-        versionName = "2.3.0"
+        versionCode = 10
+        versionName = "2.4.0"
     }
 
     androidResources {
@@ -55,6 +55,7 @@ android {
     }
 
     compileOptions {
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
@@ -84,6 +85,8 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.9.3")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
+    implementation("com.github.teamnewpipe:NewPipeExtractor:0.27.1")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs_nio:2.1.5")
 
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-tooling-preview")

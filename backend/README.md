@@ -1,14 +1,13 @@
-# Backend do BaixaTrix (uso pessoal)
+# Backend opcional independente
 
-Este backend FastAPI + `yt-dlp` pode resolver links das plataformas suportadas,
-incluindo YouTube, para o app BaixaTrix. O link enviado pelo app será recebido
-por este servidor configurado pelo próprio usuário. Use somente vídeos seus ou
-que você tenha autorização para baixar; respeite os direitos autorais e os
-termos das plataformas.
+Este backend FastAPI + `yt-dlp` é uma ferramenta independente para testes e
+desenvolvimento. **O BaixaTrix 2.4.0 não o utiliza:** a extração do YouTube é
+feita localmente no app com NewPipe Extractor. Só rode este serviço se você
+precisar dele para seu próprio fluxo; use somente conteúdo autorizado e respeite
+os termos das plataformas.
 
-O container inclui Deno para resolver os desafios JavaScript exigidos pelo
-YouTube e instala o grupo `yt-dlp[default]`, que contém os scripts EJS usados
-pelo extrator. Referências oficiais: [guia EJS do yt-dlp](https://github.com/yt-dlp/yt-dlp/wiki/EJS)
+O container inclui Deno e instala `yt-dlp[default]` para o uso independente do
+backend. Referências oficiais: [guia EJS do yt-dlp](https://github.com/yt-dlp/yt-dlp/wiki/EJS)
 e [imagem Docker do Deno](https://hub.docker.com/r/denoland/deno).
 
 ## Rodando com Docker
@@ -20,10 +19,9 @@ cp .env.example .env
 docker compose up -d --build
 ```
 
-O serviço escuta somente em `127.0.0.1:8000`. Configure um proxy reverso ou
-túnel privado com HTTPS para disponibilizá-lo ao celular. Não exponha a porta
-8000 diretamente à Internet. Configure no app a URL HTTPS pública/privada do
-proxy e a mesma `API_KEY` definida em `.env`.
+O serviço escuta somente em `127.0.0.1:8000`. Se outro cliente seu for acessá-lo,
+configure um proxy reverso ou túnel privado com HTTPS. Não exponha a porta 8000
+diretamente à Internet.
 
 ## Rodando sem Docker
 
@@ -38,8 +36,8 @@ export API_KEY="$(openssl rand -hex 32)"
 uvicorn app:app --host 127.0.0.1 --port 8000
 ```
 
-Para conectar o app, ainda é necessário expor esse serviço por um proxy reverso
-ou túnel privado com HTTPS e configurar a `API_KEY` no ambiente.
+Se outro cliente seu for acessar o serviço, exponha-o por um proxy reverso ou
+túnel privado com HTTPS e configure a `API_KEY` no ambiente.
 
 ## Cookies (Instagram)
 

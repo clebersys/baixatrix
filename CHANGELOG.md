@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.4.0] - 2026-11-22
+
+### Alterado
+- A extração de vídeos públicos do YouTube agora acontece diretamente no
+  aparelho, sem URL de backend, chave de API ou configuração extra.
+- Quando o YouTube fornece faixas separadas, o app combina H.264/HEVC + AAC no
+  aparelho, sem reencodificar.
+- A licença do projeto passou para GPL-3.0-or-later para compatibilidade com o
+  NewPipe Extractor.
+
+### Limitações
+- O app precisa de MP4 progressivo ou faixas H.264/HEVC + AAC compatíveis para montar
+  o arquivo. Mantenha-o aberto durante a combinação local.
+- Use somente conteúdo próprio ou autorizado e respeite os termos do YouTube.
+
 ## [2.3.0] - 2026-11-22
 
 ### Adicionado

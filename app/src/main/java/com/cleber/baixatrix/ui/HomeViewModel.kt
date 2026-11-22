@@ -6,7 +6,6 @@ import android.os.Environment
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.cleber.baixatrix.data.DownloadRepository
-import com.cleber.baixatrix.data.BackendSettingsRepository
 import com.cleber.baixatrix.data.MediaRepository
 import com.cleber.baixatrix.data.model.ResolveException
 import com.cleber.baixatrix.data.model.ResolvedMedia
@@ -49,7 +48,7 @@ data class HomeUiState(
 
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val mediaRepository = MediaRepository(BackendSettingsRepository(application))
+    private val mediaRepository = MediaRepository()
     private val downloadRepository = DownloadRepository(application)
 
     private val _state = MutableStateFlow(HomeUiState())
@@ -57,7 +56,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     private var resolveJob: Job? = null
     private var downloadJob: Job? = null
-    private var lastCompletedDownloadId: Long? = null
+    private var lastCompletedDownload: DownloadRepository.State.Completed? = null
     private var lastCompletedSourceName: String = "video"
 
     fun onUrlChange(value: String) {
@@ -185,7 +184,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                     }
 
                     is DownloadRepository.State.Completed -> {
-                        lastCompletedDownloadId = downloadState.downloadId
+                        lastCompletedDownload = downloadState
                         lastCompletedSourceName = media.displayTitle
                         _state.update {
                             it.copy(
@@ -197,7 +196,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                             )
                         }
                         if (splitAfterDownload) {
-                            splitDownloadedVideo(downloadState.downloadId, media.displayTitle)
+                            splitDownloadedVideo(downloadState, media.displayTitle)
                         }
                     }
 
@@ -214,12 +213,15 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun splitAgain() {
-        val downloadId = lastCompletedDownloadId ?: return
+        val completed = lastCompletedDownload ?: return
         if (_state.value.isSplitting) return
-        viewModelScope.launch { splitDownloadedVideo(downloadId, lastCompletedSourceName) }
+        viewModelScope.launch { splitDownloadedVideo(completed, lastCompletedSourceName) }
     }
 
-    private suspend fun splitDownloadedVideo(downloadId: Long, sourceName: String) {
+    private suspend fun splitDownloadedVideo(
+        completed: DownloadRepository.State.Completed,
+        sourceName: String
+    ) {
         _state.update { it.copy(isSplitting = true, splitProgress = 0f, splitError = null) }
         try {
             val result = withContext(Dispatchers.IO) {
@@ -240,7 +242,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                     runCatching { old.deleteRecursively() }
                 }
                 val outputDir = File(partsRoot, "${safeName}_$stamp")
-                val descriptor = downloadRepository.openDownloadedFile(downloadId)
+                val descriptor = downloadRepository.openCompletedFile(completed)
                 VideoSplitter.split(
                     descriptor = descriptor,
                     outputDir = outputDir,

@@ -1,150 +1,180 @@
 package com.cleber.baixatrix.data.resolver
 
-import com.cleber.baixatrix.data.BackendSettingsRepository
 import com.cleber.baixatrix.data.model.ResolveException
 import com.cleber.baixatrix.data.model.ResolvedMedia
 import com.cleber.baixatrix.data.model.VideoVariant
+import com.cleber.baixatrix.util.LinkParser
 import com.cleber.baixatrix.util.Platform
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import org.json.JSONObject
+import org.schabi.newpipe.extractor.MediaFormat
+import org.schabi.newpipe.extractor.NewPipe
+import org.schabi.newpipe.extractor.exceptions.ExtractionException
+import org.schabi.newpipe.extractor.exceptions.SignInConfirmNotBotException
+import org.schabi.newpipe.extractor.stream.AudioStream
+import org.schabi.newpipe.extractor.stream.DeliveryMethod
+import org.schabi.newpipe.extractor.stream.StreamInfo
+import org.schabi.newpipe.extractor.stream.VideoStream
 import java.io.IOException
-import java.util.concurrent.TimeUnit
 
-/** Resolves YouTube links through the user's configured self-hosted backend. */
-class YoutubeResolver(private val settingsRepository: BackendSettingsRepository) : PlatformResolver {
-
-    private val client = OkHttpClient.Builder()
-        .connectTimeout(15, TimeUnit.SECONDS)
-        .readTimeout(45, TimeUnit.SECONDS)
-        .callTimeout(60, TimeUnit.SECONDS)
-        .followRedirects(false)
-        .followSslRedirects(false)
-        .build()
+/** Extracts public YouTube video streams locally with NewPipe Extractor. */
+class YoutubeResolver : PlatformResolver {
 
     override suspend fun resolve(url: String): ResolvedMedia {
-        val settings = settingsRepository.load()
-        val baseUrl = settings.baseUrl.toHttpUrlOrNull()
-            ?: throw ResolveException("Configure o endereço HTTPS do backend em Configurações.")
-        if (
-            baseUrl.scheme != "https" ||
-            baseUrl.username.isNotEmpty() ||
-            baseUrl.password.isNotEmpty()
-        ) {
-            throw ResolveException("O endereço do backend precisa usar HTTPS válido.")
+        if (LinkParser.platform(url) != Platform.YOUTUBE) {
+            throw ResolveException("Cole um link válido de vídeo do YouTube.")
         }
-        val endpoint = baseUrl.newBuilder()
-            .addPathSegment("resolve")
-            .addQueryParameter("url", url)
-            .build()
-
-        val request = Request.Builder()
-            .url(endpoint)
-            .header("Accept", "application/json")
-            .apply {
-                if (settings.apiKey.isNotBlank()) header("X-Api-Key", settings.apiKey)
-            }
-            .get()
-            .build()
+        if (NewPipe.getDownloader() == null) {
+            throw ResolveException("O extrator local do YouTube não foi inicializado.")
+        }
 
         return withContext(Dispatchers.IO) {
-            try {
-                client.newCall(request).execute().use { response ->
-                    if (!response.isSuccessful) {
-                        val message = when (response.code) {
-                            401 -> "A chave do backend foi recusada. Confira a configuração em Configurações."
-                            422 -> "O backend não encontrou um MP4 progressivo compatível para este vídeo."
-                            else -> "O backend YouTube respondeu com HTTP ${response.code}."
-                        }
-                        throw ResolveException(message)
-                    }
-                    val responseBody = response.body
-                        ?: throw ResolveException("O backend retornou uma resposta vazia.")
-                    val source = responseBody.source()
-                    source.request(MAX_RESPONSE_BYTES + 1)
-                    if (source.buffer.size > MAX_RESPONSE_BYTES) {
-                        throw ResolveException("A resposta do backend excedeu o limite permitido.")
-                    }
-                    parseYoutubeResponse(source.buffer.readUtf8(), url)
-                }
+            val info = try {
+                StreamInfo.getInfo(url)
             } catch (error: IOException) {
                 throw ResolveException(
-                    "Não foi possível acessar o backend YouTube. Verifique a URL e a conexão.",
+                    "Não consegui acessar o YouTube. Verifique sua conexão e tente novamente.",
+                    cause = error
+                )
+            } catch (error: SignInConfirmNotBotException) {
+                throw ResolveException(
+                    "O YouTube recusou a extração automática nesta conexão. Tente novamente mais tarde.",
+                    cause = error
+                )
+            } catch (error: ExtractionException) {
+                throw ResolveException(
+                    "Não consegui extrair este vídeo público. O YouTube pode ter alterado o formato ou o vídeo pode estar indisponível.",
                     cause = error
                 )
             }
+
+            mapYoutubeInfo(info, url)
         }
     }
 }
 
-internal fun parseYoutubeResponse(responseBody: String, sourceUrl: String): ResolvedMedia {
-    val response = try {
-        JSONObject(responseBody)
-    } catch (error: Exception) {
-        throw ResolveException("O backend retornou uma resposta inválida.", cause = error)
-    }
+internal fun mapYoutubeInfo(info: StreamInfo, sourceUrl: String): ResolvedMedia {
+    val muxedVariants = info.videoStreams
+        .asSequence()
+        .filter { stream ->
+                stream.isUrl() &&
+                !stream.isVideoOnly() &&
+                stream.deliveryMethod == DeliveryMethod.PROGRESSIVE_HTTP &&
+                stream.format == MediaFormat.MPEG_4 &&
+                isMuxerCompatibleVideoCodec(stream.codec)
+        }
+        .mapNotNull { stream -> toProgressiveVariant(stream, audioUrl = null) }
+        .sortedWith(
+            compareByDescending<VideoVariant> { it.height ?: 0 }
+                .thenByDescending { it.bitrate ?: 0L }
+        )
+        .distinctBy { it.height ?: 0 }
+        .toList()
 
-    if (response.optString("status") != "ok") {
+    val audioUrl = info.audioStreams
+        .asSequence()
+        .filter { stream ->
+                stream.isUrl() &&
+                stream.deliveryMethod == DeliveryMethod.PROGRESSIVE_HTTP &&
+                stream.format == MediaFormat.M4A &&
+                isMuxerCompatibleAudioCodec(stream.codec)
+        }
+        .sortedByDescending(AudioStream::getAverageBitrate)
+        .mapNotNull { audioStream -> safeYoutubeMediaUrl(audioStream.content) }
+        .firstOrNull()
+
+    val variants = if (muxedVariants.isNotEmpty()) {
+        muxedVariants
+    } else {
+        val separateAudioUrl = audioUrl
+            ?: throw ResolveException("O YouTube não ofereceu uma faixa AAC compatível.")
+        info.videoOnlyStreams
+            .asSequence()
+            .filter { stream ->
+                stream.isUrl() &&
+                    stream.isVideoOnly() &&
+                    stream.deliveryMethod == DeliveryMethod.PROGRESSIVE_HTTP &&
+                    stream.format == MediaFormat.MPEG_4 &&
+                    isMuxerCompatibleVideoCodec(stream.codec)
+            }
+            .mapNotNull { stream -> toProgressiveVariant(stream, separateAudioUrl) }
+            .sortedWith(
+                compareByDescending<VideoVariant> { it.height ?: 0 }
+                    .thenByDescending { it.bitrate ?: 0L }
+            )
+            .distinctBy { it.height ?: 0 }
+            .toList()
+    }.take(MAX_VARIANTS)
+
+    if (variants.isEmpty()) {
         throw ResolveException(
-            "Não encontrei um formato MP4 compatível. O vídeo pode estar indisponível."
+            "Este vídeo não oferece MP4 progressivo ou faixas H.264/AAC compatíveis. Tente outro vídeo público."
         )
     }
 
-    val variantsJson = response.optJSONArray("variants")
-        ?: throw ResolveException("O backend não retornou formatos de vídeo.")
-    val variants = buildList {
-        for (index in 0 until minOf(variantsJson.length(), MAX_VARIANTS)) {
-            val item = variantsJson.optJSONObject(index) ?: continue
-            if (item.optString("mimeType") != "video/mp4") continue
-            val mediaUrl = item.optString("url").toHttpUrlOrNull() ?: continue
-            if (
-                mediaUrl.scheme != "https" ||
-                mediaUrl.username.isNotEmpty() ||
-                mediaUrl.port != 443 ||
-                mediaUrl.host != "googlevideo.com" && !mediaUrl.host.endsWith(".googlevideo.com")
-            ) {
-                continue
-            }
-            add(
-                VideoVariant(
-                    url = mediaUrl.toString(),
-                    width = item.optInt("width").takeIf { it > 0 },
-                    height = item.optInt("height").takeIf { it > 0 },
-                    bitrate = item.optLong("bitrate").takeIf { it > 0 },
-                    mimeType = "video/mp4"
-                )
-            )
-        }
-    }
-    if (variants.isEmpty()) {
-        throw ResolveException("O backend não retornou um MP4 progressivo válido.")
-    }
-
-    val durationSeconds = response.optDouble("duration", Double.NaN)
-    val thumbnailUrl = response.optString("thumbnail")
-        .toHttpUrlOrNull()
-        ?.takeIf {
-            it.scheme == "https" &&
-                it.username.isEmpty() &&
-                (it.host == "ytimg.com" || it.host.endsWith(".ytimg.com"))
+    val thumbnailUrl = info.thumbnails
+        .maxByOrNull { it.height }
+        ?.url
+        ?.toHttpUrlOrNull()
+        ?.takeIf { imageUrl ->
+            imageUrl.scheme == "https" &&
+                imageUrl.username.isEmpty() &&
+                imageUrl.password.isEmpty() &&
+                (imageUrl.host == "ytimg.com" || imageUrl.host.endsWith(".ytimg.com"))
         }
         ?.toString()
 
     return ResolvedMedia(
         platform = Platform.YOUTUBE,
         sourceUrl = sourceUrl,
-        title = response.optString("title").takeIf { it.isNotBlank() && it != "null" }?.take(140),
-        author = response.optString("author").takeIf { it.isNotBlank() && it != "null" }?.take(120),
+        title = info.name.takeIf(String::isNotBlank)?.take(140),
+        author = info.uploaderName.takeIf(String::isNotBlank)?.take(120),
         thumbnailUrl = thumbnailUrl,
-        durationMillis = durationSeconds
-            .takeIf { it.isFinite() && it >= 0 }
-            ?.let { (it * 1000).toLong() },
+        durationMillis = info.duration.takeIf { it >= 0 }?.times(1_000L),
         variants = variants
     )
 }
 
+private fun toProgressiveVariant(stream: VideoStream, audioUrl: String?): VideoVariant? {
+    val mediaUrl = safeYoutubeMediaUrl(stream.content) ?: return null
+
+    val height = stream.height.takeIf { it > 0 }
+        ?: stream.getResolution().removeSuffix("p").toIntOrNull()?.takeIf { it > 0 }
+    return VideoVariant(
+        url = mediaUrl.toString(),
+        width = stream.width.takeIf { it > 0 },
+        height = height,
+        bitrate = stream.bitrate.takeIf { it > 0 }?.toLong(),
+        mimeType = MediaFormat.MPEG_4.mimeType,
+        audioUrl = audioUrl
+    )
+}
+
+private fun safeYoutubeMediaUrl(value: String): String? {
+    val url = value.toHttpUrlOrNull() ?: return null
+    if (
+        url.scheme != "https" ||
+        url.username.isNotEmpty() ||
+        url.password.isNotEmpty() ||
+        url.port != 443 ||
+        (url.host != "googlevideo.com" && !url.host.endsWith(".googlevideo.com"))
+    ) {
+        return null
+    }
+    return url.toString()
+}
+
+private fun isMuxerCompatibleVideoCodec(codec: String?): Boolean {
+    if (codec.isNullOrBlank()) return false
+    val normalized = codec.lowercase()
+    return normalized.startsWith("avc1") ||
+        normalized.startsWith("h264") ||
+        normalized.startsWith("hev1") ||
+        normalized.startsWith("hvc1")
+}
+
+private fun isMuxerCompatibleAudioCodec(codec: String?): Boolean =
+    codec?.lowercase()?.startsWith("mp4a") == true
+
 private const val MAX_VARIANTS = 20
-private const val MAX_RESPONSE_BYTES = 1_000_000L

@@ -1,62 +1,66 @@
-# Plano: suporte a vídeos do YouTube
+# Plano: extração local de vídeos do YouTube
 
 ## Visão geral
 
-Integrar o app Android ao backend próprio FastAPI/`yt-dlp` existente para resolver
-links de vídeos e Shorts do YouTube, exibir a prévia e reutilizar o fluxo de
-download atual. Os links serão enviados somente ao endereço configurado pelo
-usuário; Instagram e Kwai permanecem locais.
+Substituir a configuração de backend da versão 2.3.0 por extração local via
+NewPipe Extractor. O app continuará usando DownloadManager, player e biblioteca
+existentes; apenas a resolução do YouTube muda. Publicar como 2.4.0 no GitHub,
+fora da Play Store.
 
 ## Decisões de arquitetura
 
-- Manter o contrato `GET /resolve?url=...` e validar host/protocolo no backend
-  antes de chamar `yt-dlp`, evitando que o endpoint aceite URLs arbitrárias.
-- Reutilizar formatos progressivos MP4 para não introduzir mesclagem nem novas
-  dependências no app.
-- Guardar URL do backend e chave opcional nas preferências privadas do app; não
-  incluir chaves ou endereço pessoal nos arquivos versionados.
-- Exigir endpoint HTTPS no app para não expor a chave ou os links na rede; o
-  backend pessoal precisará ser acessível por HTTPS (por exemplo, via proxy
-  reverso ou túnel privado).
-- Não enviar cookies de conta YouTube. Manter o uso opcional de cookies somente
-  para fluxos existentes do backend que não sejam YouTube.
+- Usar NewPipe Extractor 0.27.1, a versão oficial mais recente consultada, e um
+  downloader OkHttp sem cookies.
+- Inicializar o extractor uma vez no `Application` e executar chamadas de rede
+  em `Dispatchers.IO`.
+- Usar streams muxed quando disponíveis; caso contrário, parear MP4 H.264/HEVC
+  progressive com AAC M4A progressive e multiplexar localmente via MediaMuxer.
+  Não reencodificar nem aceitar codecs não compatíveis.
+- Manter o servidor de `backend/` como ferramenta independente, mas remover toda
+  dependência de servidor/chave da interface e do caminho do app.
+- Alterar a licença do projeto para GPL-3.0-or-later, compatível com a biblioteca.
+- Release final: APK assinado com a mesma keystore, versão 2.4.0/versionCode 10,
+  tag `v2.4.0`, APK e SHA-256 anexados à GitHub Release; nenhum AAB ou Play Store.
 
 ## Tarefas
 
-### Fase 1: contrato e validação do backend
-- [x] Tarefa 1: restringir URLs no backend e testar formatos progressivos.
+### Fase 1: dependência e inicialização do extractor
+- [x] Adicionar JitPack, NewPipe Extractor, desugaring NIO e regras de shrinker.
+- [x] Implementar downloader OkHttp e inicialização única no app.
 
 ### Checkpoint 1
-- [x] Testes do backend passam; links fora dos hosts permitidos são rejeitados antes
-  de iniciar extração.
+- [x] APK compila e os testes unitários passam.
 
-### Fase 2: reconhecimento e resolução Android
-- [x] Tarefa 2: adicionar plataforma YouTube e resolver a resposta do backend com
-  validação defensiva.
-- [x] Tarefa 3: integrar configuração persistente do backend à tela de configurações e ao
-  fluxo de resolução, incluindo aviso de envio do link.
+### Fase 2: fluxo local YouTube
+- [x] Trocar resolução HTTP do backend por `StreamInfo` local.
+- [x] Mapear MP4 progressive e parear faixas H.264/HEVC + AAC, validando URLs/thumbnail.
+- [x] Adicionar mux local sem reencodificação e preview de faixas separadas.
+- [x] Testar seleção, erros e manutenção do comportamento Instagram/Kwai.
+
+### Fase 3: remoção da configuração e conformidade
+- [x] Remover campos e armazenamento do backend na tela Configurações.
+- [x] Atualizar README e políticas para declarar processamento local.
+- [x] Alterar LICENSE para GPL-3.0-or-later e registrar NewPipe em terceiros.
 
 ### Checkpoint 2
-- [x] Testes unitários Android passam; build debug conclui; erro de configuração
-  ausente é claro e Instagram/Kwai seguem funcionando.
+- [x] Nenhuma URL ou chave de backend é necessária no app.
+- [x] Testes unitários passam; o build release ainda será verificado.
 
-### Fase 3: documentação e verificação
-- [x] Tarefa 4: documentar configuração HTTPS, chaves, limitações e uso responsável;
-  executar a suíte completa e revisar as alterações.
-
-### Checkpoint final
-- [x] APK debug compila; testes Android e backend passam; revisar diff e confirmar
-  que nenhum segredo foi adicionado.
+### Fase 4: release
+- [ ] Atualizar changelog e versionCode/versionName para 10/2.4.0.
+- [ ] Construir APK assinado, verificar versão, assinatura e SHA-256.
+- [ ] Commit, tag anotada, push de `main`/tag, GitHub Release e verificar assets.
+- [ ] Restaurar a conta GitHub ativa anterior após publicação.
 
 ## Riscos e mitigação
 
 | Risco | Impacto | Mitigação |
 |---|---|---|
-| O YouTube deixar de oferecer formatos MP4 progressivos | Algumas resoluções podem não aparecer | Retornar apenas formatos com áudio/vídeo juntos e explicar a limitação; não implementar mesclagem sem nova aprovação |
-| URLs diretas expirarem | Prévia funciona, download pode falhar depois | Tratar falha com orientação para resolver o link novamente |
-| Backend HTTP expor a chave/link | Interceptação na rede | Validar HTTPS no app e documentar proxy/túnel HTTPS |
-| Resposta externa malformada | Crash ou URL de mídia inesperada | Validar esquema HTTPS e campos obrigatórios antes de criar a mídia |
+| YouTube muda APIs internas | Extração pode parar para alguns links | Usar versão estável mantida do NewPipe Extractor; mostrar erro recuperável |
+| Vídeo só oferece faixas adaptativas | Download depende de mux local | Combinar faixas compatíveis sem reencodificar; rejeitar codecs não suportados |
+| CDN rejeita headers | Player/download pode retornar 403 | Usar o User-Agent alinhado ao downloader NewPipe |
+| Relicenciamento | Publicação sob MIT deixa de ser correta com a dependência GPL | Alterar a licença antes de distribuir a versão 2.4.0 |
 
-## Perguntas em aberto
+## Open questions
 
-- Nenhuma. O usuário aprovou o escopo pessoal fora da Play Store e a especificação.
+- Nenhuma. O usuário aprovou extração local, GPL-3.0-or-later e publicação no GitHub.

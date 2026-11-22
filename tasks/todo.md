@@ -1,29 +1,31 @@
-# Tarefas: suporte a vídeos do YouTube
+# Tarefas: extração local do YouTube e release 2.4.0
 
-## Tarefa 1: restringir e testar o backend — concluída
-- [x] Validar esquema/host antes de invocar `yt-dlp`; cookies não são usados para YouTube.
-- [x] Testar URLs aceitas/recusadas, formatos progressivos e fallback de Instagram.
-- [x] Testes: 9 passaram com `PYTHONPATH=/tmp/baixatrix-backend-deps312 python3 -m unittest discover -s tests`.
-- [x] `docker compose config` validado com chave de teste.
-- [x] Imagem Docker construída e Deno/EJS conferidos no container.
-
-## Tarefa 2: reconhecer links YouTube no Android — concluída
-- [x] Reconhecer watch, Shorts, youtu.be e hosts previstos; recusar domínios falsos, HTTP e links sem ID.
-- [x] Testes unitários cobrem links YouTube e preservam Instagram/Kwai.
+## Tarefa 1: dependência e downloader local — concluída
+- [x] Adicionar NewPipe Extractor 0.27.1, JitPack, desugaring NIO e regras R8.
+- [x] Implementar downloader OkHttp e inicialização única no app.
 - [x] `./gradlew testDebugUnitTest` passou.
 
-## Tarefa 3: resolver pelo backend e configurar no app — concluída
-- [x] Guardar URL HTTPS e chave opcional nas preferências privadas do app.
-- [x] Resolver pelo contrato existente e validar formato, CDN e miniatura da resposta.
-- [x] Exibir os campos de configuração e avisar que links YouTube são enviados ao backend.
-- [x] `./gradlew testDebugUnitTest` e `./gradlew assembleDebug` passaram.
+## Tarefa 2: extração local e mux — concluída
+- [x] Obter StreamInfo localmente; selecionar streams MP4/muxed ou pares H.264/HEVC + AAC.
+- [x] Validar URLs e combinar localmente com MediaExtractor/MediaMuxer sem reencodificar.
+- [x] Atualizar preview para tocar vídeo + áudio em streams separados.
+- [x] Testes unitários de seleção e validação passaram.
+- [ ] Smoke test real em aparelho: sem dispositivo conectado; o IP de build recebeu `SignInConfirmNotBotException` do YouTube.
 
-## Tarefa 4: documentação e revisão final — concluída
-- [x] Documentar deploy, HTTPS, EJS/Deno, configuração, limitações e uso autorizado.
-- [x] `./gradlew testDebugUnitTest` e `./gradlew assembleDebug` passaram.
-- [x] 9 testes Python passaram; `py_compile` passou.
-- [x] Docker Compose foi validado e imagem construída com Deno/EJS conferidos.
-- [x] `git diff --check` passou; nenhum endpoint pessoal ou segredo foi adicionado.
+## Tarefa 3: remover configuração e atualizar licença/docs — concluída
+- [x] Remover campos e preferências do backend da tela Configurações e do fluxo app.
+- [x] Atualizar README, privacidade e avisos para extração local.
+- [x] Mudar licença para GPL-3.0-or-later e registrar NewPipe Extractor.
+
+## Checkpoint 2
+- [x] App não pede URL/chave/backend.
+- [x] Testes unitários Android passaram.
+
+## Tarefa 4: release 2.4.0 — em andamento
+- [ ] Atualizar versionCode/versionName e changelog.
+- [ ] Montar APK release assinado e validar assinatura/versão/SHA-256.
+- [ ] Commit, tag, push e GitHub Release com APK + checksum.
+- [ ] Verificar assets e restaurar conta GitHub ativa anterior.
 
 ## Checkpoint final
-- [x] Critérios implementados; release não foi gerada nem publicada.
+- [ ] Release GitHub verificada; não publicar na Play Store.

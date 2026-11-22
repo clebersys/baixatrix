@@ -1,6 +1,7 @@
 package com.cleber.baixatrix.data.model
 
 import com.cleber.baixatrix.util.Platform
+import com.cleber.baixatrix.net.Http
 
 /** Uma qualidade/arquivo de vídeo encontrada para o mesmo post. */
 data class VideoVariant(
@@ -8,7 +9,9 @@ data class VideoVariant(
     val width: Int? = null,
     val height: Int? = null,
     val bitrate: Long? = null,
-    val mimeType: String = "video/mp4"
+    val mimeType: String = "video/mp4",
+    /** Separate AAC URL when the source has no progressive video+audio stream. */
+    val audioUrl: String? = null
 ) {
     val label: String
         get() = when {
@@ -62,10 +65,11 @@ data class ResolvedMedia(
             Platform.YOUTUBE -> sourceUrl
             Platform.OTHER -> sourceUrl
         }
-        return mapOf(
-            "Referer" to referer,
-            "User-Agent" to com.cleber.baixatrix.net.Http.DESKTOP_UA
-        )
+        return buildMap {
+            put("Referer", referer)
+            put("User-Agent", if (platform == Platform.YOUTUBE) Http.YOUTUBE_UA else Http.DESKTOP_UA)
+            if (platform == Platform.YOUTUBE) put("Origin", "https://www.youtube.com")
+        }
     }
 }
 

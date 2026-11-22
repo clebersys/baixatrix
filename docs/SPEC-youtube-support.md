@@ -1,81 +1,96 @@
-# Spec: suporte a vídeos do YouTube
+# Spec: extração local de vídeos do YouTube
 
 ## Objetivo
 
-Adicionar ao BaixaTrix, para uso pessoal fora da Play Store, a resolução e o
-download de links de vídeos e Shorts do YouTube. O app enviará o link ao backend
-`yt-dlp` que o usuário administra; Instagram e Kwai continuarão sendo resolvidos
-localmente.
+Permitir colar ou compartilhar no BaixaTrix um link de vídeo público do YouTube e
+ver a prévia/baixar sem configurar backend, URL de servidor ou chave. A extração
+será executada no próprio Android com NewPipe Extractor.
 
 Critérios de aceite:
 
-- Links `youtube.com`, `m.youtube.com`, `music.youtube.com` e `youtu.be` são
-  reconhecidos; domínios parecidos ou URLs não HTTPS/HTTP são recusados.
-- O backend só resolve hosts conhecidos (YouTube para esta integração e os
-  provedores já documentados no backend) e devolve formatos MP4 progressivos
-  (áudio e vídeo juntos), compatíveis com o DownloadManager atual.
-- O app mostra prévia e permite baixar usando o fluxo existente.
-- O endereço do backend (e chave, se configurada) pode ser informado nas opções;
-  o usuário é avisado que o link é enviado a esse servidor.
-- Sem backend configurado, a mensagem de erro orienta a configurar o serviço.
-- Instagram/Kwai e seus testes existentes continuam funcionando.
-- Não são usados cookies do YouTube, formatos privados ou faixas separadas que
-  dependam de mesclagem.
+- `youtube.com`, `m.youtube.com`, `music.youtube.com` e `youtu.be` válidos são
+  reconhecidos pelo app; domínios parecidos, links HTTP, playlists isoladas e IDs
+  malformados são recusados.
+- O app resolve localmente vídeos públicos sem configuração de servidor e sem
+  cookies/sessão de conta.
+- A prévia usa streams progressivos. O download usa MP4 com áudio embutido ou
+  combina localmente H.264/HEVC + AAC sem reencodificar; outros formatos são recusados.
+- URLs de mídia e miniaturas da resposta do extractor são validadas antes do uso.
+- Instagram e Kwai continuam resolvidos localmente sem regressões.
+- A interface não pede configuração de backend para YouTube e informa que o
+  processamento acontece no aparelho.
+- A próxima versão será 2.4.0 (versionCode 10), com APK assinado e checksum em
+  uma GitHub Release; não publicar na Play Store.
 
 ## Stack e contrato
 
-- Android: Kotlin, Jetpack Compose, OkHttp e JUnit 4 já usados pelo projeto.
-- Backend: FastAPI + `yt-dlp` já usados em `backend/`.
-- Contrato existente `GET /resolve?url=<URL>`: resposta `status=ok` com `url`,
-  `variants`, `title`, `author`, `thumbnail`, `duration` e `platform`; erros
-  retornam `status=error` e `text`. A chave, quando configurada no serviço, é
-  enviada no cabeçalho `X-Api-Key`.
+- Android: Kotlin, Jetpack Compose, OkHttp, JUnit 4 já usados pelo projeto.
+- Extração: NewPipe Extractor 0.27.1 via JitPack, com downloader OkHttp local.
+- Mux: `MediaExtractor`/`MediaMuxer` do Android para combinar H.264 + AAC sem
+  reencodificar quando não houver stream MP4 com áudio embutido.
+- Compatibilidade: minSdk 26 mantida com `desugar_jdk_libs_nio` conforme o README
+  oficial do extractor.
+- Somente metadados e formatos públicos são solicitados. Não adicionar cookies,
+  login ou acesso a vídeos privados.
+- A licença do projeto passa de MIT para GPL-3.0-or-later para compatibilidade
+  com NewPipe Extractor; o autor atual do projeto autorizou essa mudança.
 
 ## Comandos
 
 ```bash
 ./gradlew testDebugUnitTest
-./gradlew assembleDebug
+./gradlew assembleRelease
 cd backend && python3 -m unittest discover -s tests
 ```
 
 ## Estrutura
 
-- `app/src/main/java/com/cleber/baixatrix/util/LinkParser.kt`: detecção de links.
-- `app/src/main/java/com/cleber/baixatrix/data/resolver/`: resolução YouTube via
-  backend, sem alterar os resolvedores locais existentes.
-- `app/src/main/java/com/cleber/baixatrix/ui/SettingsScreen.kt`: configuração do
-  endereço/chave e aviso de privacidade.
-- `backend/app.py`: validação estrita de hosts e extração YouTube sem cookies.
-- Testes Android em `app/src/test/`; testes do backend em `backend/tests/`.
+- `app/src/main/java/com/cleber/baixatrix/data/resolver/YoutubeResolver.kt`:
+  extração local e seleção de formatos.
+- `app/src/main/java/com/cleber/baixatrix/data/processing/YoutubeStreamMuxer.kt`:
+  mux local de faixas remotas sem reencodificar.
+- `app/src/main/java/com/cleber/baixatrix/data/resolver/NewPipeDownloader.kt`:
+  implementação OkHttp do contrato Downloader do extractor.
+- `app/src/main/java/com/cleber/baixatrix/BaixaTrixApplication.kt`: inicialização
+  única do NewPipe Extractor.
+- Testes Android em `app/src/test/`; backend permanece como ferramenta opcional
+  independente, não usado pelo app.
 
 ## Estilo
 
-Manter Kotlin idiomático e o estilo atual do app: funções puras para parsing,
-resolvedores implementando `PlatformResolver`, mensagens em português e validação
-de resposta externa antes de criar `ResolvedMedia`.
+Manter os resolvedores implementando `PlatformResolver`, usar corrotinas para
+isolar a extração de rede em IO, traduzir falhas externas para `ResolveException`
+e não registrar links ou dados externos em logs.
 
 ## Estratégia de testes
 
-- Testes unitários para hosts/vídeos Shorts válidos, falsos domínios e URLs
-  inválidas; garantir que Instagram/Kwai não mudaram.
-- Testes de API para entradas não YouTube recusadas e formatos separados/sem
-  áudio excluídos.
-- Executar testes unitários Android e backend, seguido do APK debug.
-- Teste manual com URL pública autorizada e backend próprio; verificar prévia,
-  download e ausência de regressão nos links existentes.
+- Testes unitários para links válidos/inválidos e seleção de MP4 progressivo ou
+  pares H.264/HEVC + AAC com URLs válidas.
+- Testes de segurança para recusar URLs de mídia fora de HTTPS/`googlevideo.com`
+  e miniaturas fora de `ytimg.com`.
+- Executar todos os testes Android e montar APK release assinado.
+- Verificar assinatura, versão e continuidade da chave em relação à 2.3.0.
+- Tentar smoke test manual em aparelho com vídeo público autorizado. O teste
+  automatizado no host atual recebeu `SignInConfirmNotBotException` do YouTube
+  para o IP do ambiente; isso não prova o comportamento em rede residencial.
 
 ## Limites
 
-- Sempre: validar URLs no app e no servidor; nunca registrar a chave; informar
-  claramente o envio do link ao backend; baixar somente vídeos próprios ou com
-  autorização.
-- Ask first: novas dependências, cookies/autenticação de conta YouTube, mesclagem
-  de faixas de áudio/vídeo e configuração de publicação na Play Store.
-- Nunca: aceitar hosts arbitrários no endpoint de resolução, incluir chaves no
-  repositório, ou tentar contornar controles de acesso/conteúdo privado.
+- Sempre: extração no aparelho, validação dos URLs retornados, uso sem cookies,
+  mensagens claras quando não houver formato compatível e download apenas de
+  conteúdo próprio ou autorizado.
+- Ask first: reencodificação de áudio/vídeo, cookies/login, suporte a
+  conteúdo privado, publicação na Play Store ou mudança de licença futura.
+- Nunca: pedir backend para o fluxo YouTube, incluir credenciais, ou contornar
+  controles de acesso/DRM.
+
+## Fontes oficiais
+
+- [README do NewPipe Extractor](https://github.com/TeamNewPipe/NewPipeExtractor/blob/v0.27.1/README.md)
+- [Release 0.27.1 e notas de compatibilidade](https://github.com/TeamNewPipe/NewPipeExtractor/releases/tag/v0.27.1)
+- [Android: API desugaring para `java.nio`](https://android-developers.googleblog.com/2023/02/api-desugaring-supporting-android-13-and-java-nio.html)
 
 ## Perguntas em aberto
 
-- Nenhuma. O backend será configurável nas opções e a chave será opcional para
-  manter compatibilidade com a configuração atual do backend.
+- Nenhuma. O usuário autorizou extração local, relicenciamento GPL-3.0-or-later e
+  publicação da nova versão no GitHub.

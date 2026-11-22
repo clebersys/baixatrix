@@ -35,6 +35,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
+import androidx.media3.exoplayer.source.MergingMediaSource
 import androidx.media3.ui.PlayerView
 import coil.compose.AsyncImage
 import com.cleber.baixatrix.net.Http
@@ -48,6 +49,7 @@ import com.cleber.baixatrix.net.Http
 @Composable
 fun VideoPreview(
     url: String,
+    audioUrl: String? = null,
     headers: Map<String, String>,
     thumbnailUrl: String?,
     isVertical: Boolean,
@@ -69,6 +71,7 @@ fun VideoPreview(
         if (started) {
             ExoVideo(
                 url = url,
+                audioUrl = audioUrl,
                 headers = headers,
                 fillScreen = isVertical,
                 modifier = Modifier.fillMaxSize()
@@ -120,22 +123,34 @@ fun VideoPreview(
 @Composable
 private fun ExoVideo(
     url: String,
+    audioUrl: String?,
     headers: Map<String, String>,
     fillScreen: Boolean,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val player = remember(url, headers) {
+    val player = remember(url, audioUrl, headers) {
         val dataSourceFactory = DefaultHttpDataSource.Factory()
             .setDefaultRequestProperties(headers)
-            .setUserAgent(Http.DESKTOP_UA)
+            .setUserAgent(headers["User-Agent"] ?: Http.DESKTOP_UA)
             .setAllowCrossProtocolRedirects(true)
 
+        val mediaSourceFactory = DefaultMediaSourceFactory(dataSourceFactory)
+        val videoSource = mediaSourceFactory.createMediaSource(MediaItem.fromUri(url))
+        val source = if (audioUrl.isNullOrBlank()) {
+            videoSource
+        } else {
+            MergingMediaSource(
+                videoSource,
+                mediaSourceFactory.createMediaSource(MediaItem.fromUri(audioUrl))
+            )
+        }
+
         ExoPlayer.Builder(context)
-            .setMediaSourceFactory(DefaultMediaSourceFactory(dataSourceFactory))
+            .setMediaSourceFactory(mediaSourceFactory)
             .build()
             .apply {
-                setMediaItem(MediaItem.fromUri(url))
+                setMediaSource(source)
                 playWhenReady = true
                 prepare()
             }

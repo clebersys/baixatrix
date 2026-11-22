@@ -84,6 +84,7 @@ import com.cleber.baixatrix.util.BatchShareUtils
 import com.cleber.baixatrix.util.Formatters
 import com.cleber.baixatrix.util.LinkParser
 import com.cleber.baixatrix.util.MediaIntents
+import com.cleber.baixatrix.util.Platform
 import java.io.File
 
 @Composable
@@ -345,7 +346,7 @@ private fun LinkCard(
                 icon = painterResource(R.drawable.ic_link)
             )
             Text(
-                text = "Instagram e Kwai são processados no aparelho; YouTube usa o backend configurado em Configurações.",
+                text = "Instagram, Kwai e vídeos públicos do YouTube são processados no aparelho.",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -466,6 +467,7 @@ private fun MediaCard(
             Box(Modifier.fillMaxWidth()) {
                 VideoPreview(
                     url = variant.url,
+                    audioUrl = variant.audioUrl,
                     headers = headers,
                     thumbnailUrl = media.thumbnailUrl,
                     isVertical = media.isVertical
@@ -539,6 +541,7 @@ private fun MediaCard(
                 }
 
                 DownloadSection(
+                    isYoutube = media.platform == Platform.YOUTUBE,
                     isDownloading = isDownloading,
                     progress = progress,
                     isSplitting = isSplitting,
@@ -561,6 +564,7 @@ private fun MediaCard(
 
 @Composable
 private fun DownloadSection(
+    isYoutube: Boolean,
     isDownloading: Boolean,
     progress: Int?,
     isSplitting: Boolean,
@@ -595,7 +599,11 @@ private fun DownloadSection(
                     )
                 }
                 Text(
-                    text = "Você pode continuar usando o app — o download aparece na notificação.",
+                    text = if (isYoutube) {
+                        "O vídeo está sendo combinado no aparelho; mantenha o app aberto."
+                    } else {
+                        "Você pode continuar usando o app — o download aparece na notificação."
+                    },
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

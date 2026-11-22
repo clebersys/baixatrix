@@ -1,35 +1,43 @@
 package com.cleber.baixatrix.data
 
 import android.app.DownloadManager
+import android.content.ContentValues
 import android.content.Context
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Environment
 import android.os.ParcelFileDescriptor
+import android.os.Build
+import android.provider.MediaStore
 import com.cleber.baixatrix.data.model.ResolvedMedia
 import com.cleber.baixatrix.data.model.VideoVariant
+import com.cleber.baixatrix.data.processing.YoutubeStreamMuxer
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.coroutines.withContext
 import java.io.File
+import kotlin.coroutines.coroutineContext
 import kotlin.coroutines.resume
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 /**
- * Baixa o vídeo usando o DownloadManager do Android: o download continua em
- * segundo plano, aparece na notificação do sistema e é retomado se a conexão
- * cair. O arquivo vai para Filmes/BaixaTrix.
+ * Usa DownloadManager para arquivos diretos. Quando o YouTube só oferece faixas
+ * separadas, combina H.264 + AAC no aparelho e grava o MP4 em Filmes/BaixaTrix.
  */
 class DownloadRepository(private val context: Context) {
 
     sealed interface State {
         /** progresso em 0..100, ou -1 quando o tamanho ainda é desconhecido. */
         data class Running(val progress: Int) : State
-        data class Completed(val path: String, val uri: Uri?, val downloadId: Long) : State
+        data class Completed(val path: String, val uri: Uri?, val downloadId: Long?) : State
         data class Failed(val reason: String) : State
     }
 
@@ -37,6 +45,42 @@ class DownloadRepository(private val context: Context) {
         media: ResolvedMedia,
         variant: VideoVariant
     ): Flow<State> = flow {
+        if (variant.audioUrl != null) {
+            emit(State.Running(-1))
+            var publishedFile: State.Completed? = null
+            try {
+                val completed = withContext(Dispatchers.IO) {
+                    val mergedFile = File.createTempFile("baixatrix_", ".mp4", context.cacheDir)
+                    try {
+                        YoutubeStreamMuxer.mux(
+                            videoUrl = variant.url,
+                            audioUrl = variant.audioUrl,
+                            outputFile = mergedFile,
+                            headers = media.requestHeaders(),
+                            checkActive = { coroutineContext.ensureActive() }
+                        )
+                        publishMergedFile(
+                            mergedFile,
+                            fileNameFor(media),
+                            checkActive = { coroutineContext.ensureActive() }
+                        ).also { publishedFile = it }
+                    } finally {
+                        mergedFile.delete()
+                    }
+                }
+                emit(completed)
+            } catch (cancelled: CancellationException) {
+                publishedFile?.let(::deleteCompletedFile)
+                throw cancelled
+            } catch (_: Exception) {
+                emit(State.Failed(
+                    "Não foi possível baixar e combinar as faixas deste vídeo neste aparelho. " +
+                        "Tente outra qualidade ou outro vídeo público."
+                ))
+            }
+            return@flow
+        }
+
         val fileName = fileNameFor(media)
         val relativePath = "$FOLDER_NAME/$fileName"
 
@@ -108,11 +152,99 @@ class DownloadRepository(private val context: Context) {
         }
     }
 
-    /** Opens the completed DownloadManager file without requiring media-library access. */
-    fun openDownloadedFile(downloadId: Long): ParcelFileDescriptor {
+    /** Opens a completed download from DownloadManager or the local MediaStore output. */
+    fun openCompletedFile(completed: State.Completed): ParcelFileDescriptor {
+        completed.downloadId?.let { downloadId ->
+            return openDownloadedFile(downloadId)
+        }
+        completed.uri?.let { uri ->
+            return context.contentResolver.openFileDescriptor(uri, "r")
+                ?: error("Não foi possível abrir o vídeo salvo.")
+        }
+        return ParcelFileDescriptor.open(File(completed.path), ParcelFileDescriptor.MODE_READ_ONLY)
+    }
+
+    /** Opens a completed DownloadManager file without requiring media-library access. */
+    private fun openDownloadedFile(downloadId: Long): ParcelFileDescriptor {
         val manager = context.getSystemService(DownloadManager::class.java)
             ?: error("Serviço de download indisponível neste aparelho.")
         return manager.openDownloadedFile(downloadId)
+    }
+
+    private suspend fun publishMergedFile(
+        source: File,
+        fileName: String,
+        checkActive: () -> Unit
+    ): State.Completed {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val values = ContentValues().apply {
+                put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
+                put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4")
+                put(
+                    MediaStore.MediaColumns.RELATIVE_PATH,
+                    "${Environment.DIRECTORY_MOVIES}/$FOLDER_NAME"
+                )
+                put(MediaStore.MediaColumns.IS_PENDING, 1)
+            }
+            val uri = context.contentResolver.insert(
+                MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+                values
+            ) ?: error("Não foi possível criar o arquivo na galeria.")
+
+            try {
+                val output = context.contentResolver.openOutputStream(uri, "w")
+                    ?: error("Não foi possível gravar o vídeo na galeria.")
+                output.use { copyWithCancellation(source, it, checkActive) }
+                checkActive()
+                val published = context.contentResolver.update(
+                    uri,
+                    ContentValues().apply { put(MediaStore.MediaColumns.IS_PENDING, 0) },
+                    null,
+                    null
+                )
+                check(published > 0) { "Não foi possível publicar o vídeo na galeria." }
+                checkActive()
+                return State.Completed(uri.toString(), uri, null)
+            } catch (error: Exception) {
+                context.contentResolver.delete(uri, null, null)
+                throw error
+            }
+        }
+
+        val destination = File(
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES),
+            "$FOLDER_NAME/$fileName"
+        )
+        destination.parentFile?.let { parent ->
+            if (!parent.exists() && !parent.mkdirs()) error("Não foi possível criar a pasta de vídeos.")
+        }
+        try {
+            destination.outputStream().use { output -> copyWithCancellation(source, output, checkActive) }
+            checkActive()
+            val uri = scanMedia(destination.absolutePath)
+            checkActive()
+            return State.Completed(destination.absolutePath, uri, null)
+        } catch (error: Exception) {
+            destination.delete()
+            throw error
+        }
+    }
+
+    private fun copyWithCancellation(source: File, output: java.io.OutputStream, checkActive: () -> Unit) {
+        source.inputStream().use { input ->
+            val buffer = ByteArray(COPY_BUFFER_SIZE)
+            while (true) {
+                checkActive()
+                val bytesRead = input.read(buffer)
+                if (bytesRead < 0) break
+                output.write(buffer, 0, bytesRead)
+            }
+        }
+    }
+
+    private fun deleteCompletedFile(completed: State.Completed) {
+        completed.uri?.let { context.contentResolver.delete(it, null, null) }
+            ?: File(completed.path).delete()
     }
 
     /**
@@ -176,5 +308,6 @@ class DownloadRepository(private val context: Context) {
 
     companion object {
         const val FOLDER_NAME = "BaixaTrix"
+        private const val COPY_BUFFER_SIZE = 64 * 1024
     }
 }

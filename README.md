@@ -2,8 +2,11 @@
 
 Aplicativo Android para baixar vídeos do **Instagram**, **Kwai** e **YouTube** a
 partir de um link. Cole o link, veja a prévia do vídeo no player e só então
-baixe. YouTube requer um backend pessoal com `yt-dlp` configurado pelo usuário.
-Esse suporte é para uso pessoal fora da Play Store.
+baixe. Links públicos do YouTube são extraídos no próprio aparelho, sem configurar
+servidor ou conta. Esse suporte é para uso pessoal fora da Play Store.
+
+O projeto está licenciado sob **GPL-3.0-or-later**; consulte [`LICENSE`](LICENSE)
+e [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
 
 <p align="center">
   <img src="docs/tela-inicial.png" width="240" alt="Tela inicial" />
@@ -29,8 +32,9 @@ Esse suporte é para uso pessoal fora da Play Store.
   Kwai Lite (`kwai-video.com/p/...`), além de vídeos e Shorts do YouTube.
 - **Prévia antes de baixar** com player embutido (ExoPlayer), capa, autor,
   duração e seletor de qualidade quando o site oferece mais de uma.
-- **Download em segundo plano** pelo DownloadManager: continua se você sair do
-  app, aparece na notificação e é retomado se a conexão cair.
+- **Download em segundo plano** pelo DownloadManager: arquivos diretos continuam
+  se você sair do app e aparecem na notificação. Se o YouTube exigir combinação
+  de faixas, mantenha o BaixaTrix aberto até o MP4 ficar pronto.
 - **Baixar e dividir em partes de 30s**: corta o vídeo nos keyframes sem
   reencodificar, preservando a qualidade original. Depois, envia todas as partes
   juntas para outro app ou para o WhatsApp como documentos (sem recompressão).
@@ -47,23 +51,26 @@ compartilhadas; mantenha o BaixaTrix aberto enquanto o processamento termina.
 
 ## Como a extração funciona
 
-Instagram e Kwai são resolvidos no próprio aparelho; YouTube usa o backend HTTPS
-pessoal configurado em Configurações:
+Instagram, Kwai e YouTube são resolvidos no próprio aparelho com seus respectivos
+extratores:
 
 | Plataforma | Estratégia |
 |---|---|
 | **Kwai / Kwai Lite** | Os links do Kwai Lite redirecionam para o Kwai. A página entrega o MP4 no HTML (`<a-video-player src=…>`); o app pega o vídeo principal (ignorando recomendações) e usa capa/título do Open Graph. |
 | **Instagram** | Para posts públicos, o app tenta a página de *embed* (`/embed/captioned/`) e as tags Open Graph. O app não solicita, aceita nem lê cookies ou `sessionid` do Instagram. |
-| **YouTube** | O link é enviado ao backend HTTPS configurado pelo usuário, que usa `yt-dlp` e retorna formatos MP4 progressivos com áudio e vídeo juntos. A chave da API é opcional; o app não envia cookies do YouTube. |
+| **YouTube** | O NewPipe Extractor obtém localmente os metadados e streams públicos. O app baixa MP4 progressivo ou combina localmente H.264/HEVC + AAC sem reencodificar; não pede servidor, login ou cookies. |
 
 ### Limitações reais (leia antes de usar)
 
 - **Posts privados não são suportados pelo BaixaTrix.** O app não solicita,
   aceita nem importa cookies ou `sessionid` do Instagram.
 - Alguns posts **públicos** podem não ser resolvidos se o Instagram exigir login.
-- YouTube precisa de um backend próprio acessível por HTTPS. Só aparecem as
-  qualidades que o YouTube oferece em MP4 progressivo; o app não combina faixas
-  separadas nem acessa vídeos privados.
+- A extração de YouTube depende das interfaces públicas usadas pelo NewPipe
+  Extractor e pode parar quando o YouTube muda essas interfaces. O app combina
+  somente faixas H.264/HEVC + AAC compatíveis, sem reencodificar; se não houver um
+  formato aceito, ele informa a limitação. Não acessa vídeos privados.
+- Ao combinar faixas do YouTube, mantenha o BaixaTrix aberto até o fim do
+  processamento.
 - Instagram e Kwai mudam o layout com frequência. Os extratores foram testados
   em novembro de 2026; se pararem de funcionar, a atualização é pontual nos
   arquivos `data/resolver/*.kt`.
@@ -75,7 +82,15 @@ pessoal configurado em Configurações:
 
 ## Instalando no aparelho
 
-O APK assinado pronto para uso fica em `dist/`:
+O APK pessoal assinado da versão 2.4.0 está na
+[GitHub Release](https://github.com/clebersys/baixatrix/releases/tag/v2.4.0):
+
+```text
+BaixaTrix-2.4.0.apk
+BaixaTrix-2.4.0.apk.sha256
+```
+
+Se você tiver os artefatos em `dist/`, instale e confira assim:
 
 ```bash
 adb install -r dist/BaixaTrix-2.2.0.apk
@@ -125,21 +140,30 @@ O arquivo `keystore.properties` e a pasta `keystore/` estão no `.gitignore`.
 ```
 app/src/main/java/com/cleber/baixatrix/
 ├── MainActivity.kt                 # entrada, edge-to-edge, link compartilhado
-├── BaixaTrixApplication.kt        # Coil (miniaturas de vídeo)
+├── BaixaTrixApplication.kt         # Coil e inicialização do NewPipe Extractor
 ├── data/
 │   ├── MediaRepository.kt          # orquestra os resolvedores
-│   ├── BackendSettingsRepository.kt # URL/chave do backend pessoal
-│   ├── DownloadRepository.kt       # DownloadManager + progresso
+│   ├── DownloadRepository.kt       # download e publicação no MediaStore
 │   ├── LibraryRepository.kt        # MediaStore (Meus vídeos)
 │   ├── model/ResolvedMedia.kt      # mídia resolvida + variantes
-│   └── resolver/                   # Instagram, Kwai e YouTube
-├── net/Http.kt                     # OkHttp compartilhado
-├── ui/                             # Compose: Home, Biblioteca, Ajustes
+│   ├── processing/                 # divisão e mux local de vídeo
+│   └── resolver/                   # Instagram, Kwai, YouTube e downloader NewPipe
+├── net/Http.kt                     # OkHttp e User-Agents
+├── ui/                             # Compose: Home, Biblioteca, Configurações
 └── util/                           # links, HTML/JSON, formatação, intents
-backend/                            # FastAPI + yt-dlp para a resolução YouTube
+backend/                            # ferramenta opcional de desenvolvimento; não usada pelo app
 ```
 
+## Licenças
+
+O NewPipe Extractor é distribuído sob GPL-3.0-or-later e usado somente para
+extração local. O app não utiliza cookies nem solicita login no YouTube.
+
 ## Publicação
+
+O suporte local ao YouTube da versão 2.4.0 é distribuído para uso pessoal no
+GitHub, fora da Play Store. Os materiais abaixo ainda descrevem a publicação
+anterior; não envie essa versão à Play Store.
 
 O pacote para a Play Store está pronto:
 
@@ -157,11 +181,10 @@ A política de privacidade é publicada pelo GitHub Pages em
 
 ## Privacidade e uso responsável
 
-Instagram e Kwai são acessados diretamente do aparelho. Para YouTube, o link é
-enviado somente ao backend HTTPS que o usuário configurar em **Configurações**; o app
-não usa servidores do desenvolvedor. O endereço e a chave opcional ficam nas
-preferências privadas do aplicativo. A pasta `backend/` contém o serviço para
-execução pelo próprio usuário.
+Instagram, Kwai e YouTube são acessados diretamente do aparelho. O BaixaTrix não
+envia links ou arquivos a um backend próprio e não solicita cookies ou login do
+YouTube. A pasta `backend/` é uma ferramenta opcional e não participa dos
+downloads do app.
 
 Baixe apenas vídeos seus ou que você tenha autorização para usar. Respeite os
 direitos autorais e os Termos de Uso das plataformas.
