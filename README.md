@@ -116,7 +116,12 @@ A versão mais recente também está em
 ./gradlew assembleRelease        # APK assinado (usa keystore.properties)
 ./gradlew bundleRelease          # AAB para a Play Store
 ./gradlew testDebugUnitTest      # testes de unidade
+./gradlew connectedDebugAndroidTest  # testes ao vivo (precisa de aparelho/emulador e rede)
 ```
+
+O teste `YoutubeLiveDeviceTest` resolve 4 vídeos públicos, confere o acesso ao
+CDN e combina faixas H.264/HEVC + AAC. Ele acessa o YouTube de verdade e pode
+falhar se a rede receber verificação anti-bot.
 
 O APK de release sai em `app/build/outputs/apk/release/`.
 
